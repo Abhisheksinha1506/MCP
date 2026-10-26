@@ -1,0 +1,40 @@
+{
+  "os": "macos",
+  "hostname": "private-machine",
+  "privilege_level": "standard",
+  "visibility_notes": [
+    "Connections for process 42 unavailable: elevated access required"
+  ],
+  "processes": [
+    {
+      "name": "Example",
+      "exe_path": "/Users/fixtureperson/Apps/Example",
+      "trust_signal": "verified",
+      "publisher": "Example Publisher",
+      "cpu_percent": 1.5,
+      "mem_mb": 24,
+      "parent": "launchd",
+      "cmdline": [
+        "secret"
+      ],
+      "username": "fixtureperson"
+    }
+  ],
+  "connections": [
+    {
+      "process_name": "Example",
+      "remote_host": "192.0.2.1",
+      "remote_port": 443,
+      "protocol": "tcp"
+    }
+  ],
+  "startup_items": [
+    {
+      "name": "Example",
+      "kind": "agent",
+      "path": "/Users/fixtureperson/Library/LaunchAgents/example.plist",
+      "enabled": true,
+      "source": "LaunchAgents"
+    }
+  ]
+}
