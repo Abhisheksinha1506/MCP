@@ -6,7 +6,8 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-_HOME = re.compile(r"(?i)(?:[a-z]:[\\/]Users[\\/]|/(?:Users|home)/)[^\\/\s\"'<>:,;]+")
+_HOME = re.compile(r"(?i)(?:[a-z]:[\\/]Users[\\/]|/(?:Users|home)/)[^\\/\r\n\"'<>:,;]+")
+_UNC_PATH = re.compile(r'(?<![A-Za-z0-9_:/\\])[\\/]{2}[^\r\n"\'<>;,]*')
 _ROOT_HOME = re.compile(r'(?<![A-Za-z0-9_/])/root(?=[/\\\s"\'<>:,;]|$)')
 _SENSITIVE = {"username", "user", "uid", "gid", "cmdline", "command_line", "arguments", "args", "contents", "file_contents", "hostname"}
 
@@ -28,9 +29,10 @@ def redact(value: Any, *, username: str | None = None, home: str | None = None) 
 
     def clean(item: Any) -> Any:
         if isinstance(item, str):
-            text = item
+            text = _UNC_PATH.sub("[network path]", item)
             if home_path and home_path not in ("/", "\\"):
-                text = re.sub(re.escape(home_path) + r"(?=[\\/]|$)", "~", text)
+                text = re.sub(re.escape(home_path) + r"(?=[\\/]|$)", "~", text,
+                              flags=re.IGNORECASE if re.match(r"[A-Za-z]:|[\\/]{2}", home_path) else 0)
             text = _ROOT_HOME.sub("~", _HOME.sub("~", text))
             # "root" is also the public privilege-level value, not private identity.
             if account and account != "root":

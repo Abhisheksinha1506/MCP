@@ -1,0 +1,5 @@
+[
+  {"Path": "C:\\Program Files\\Example\\client.exe", "Status": "Valid", "Subject": "CN=Example Publisher, O=Example, C=US"},
+  {"Path": "C:\\Users\\fixtureperson\\Apps\\工具\\helper.exe", "Status": "NotSigned", "Subject": null},
+  {"Path": "C:\\Tools\\changed.exe", "Status": "HashMismatch", "Subject": "CN=Example Publisher, O=Example"}
+]

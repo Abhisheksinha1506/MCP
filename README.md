@@ -1,8 +1,8 @@
 # Dialtone Watcher
 
-An offline, advice-only local MCP server under development. Milestones 1–3 provide
-the metadata schema, redaction, SQLite storage, and macOS and Linux collectors.
-MCP tools, rules and findings are planned. Windows collection is not implemented.
+An offline, advice-only local MCP server under development. Milestones 1–4 provide
+the metadata schema, redaction, SQLite storage, and collectors for macOS, Linux
+and Windows. MCP tools, rules and findings are planned.
 
 Requires Python 3.11+. From this folder:
 
@@ -53,7 +53,8 @@ summary. Python callers can use `from dialtone_watcher.snapshot import take_snap
 and `snapshot = take_snapshot()`; `snapshot.to_dict()` returns redacted metadata.
 This function does not save a database or modify the system. Selection uses
 `sys.platform == "darwin"` for macOS and `sys.platform.startswith("linux")`
-for Linux; other platforms currently raise `NotImplementedError`.
+for Linux, and `sys.platform == "win32"` for Windows; other platforms raise
+`NotImplementedError`.
 
 The collector uses per-process psutil APIs, falling back to the older
 `connections()` API when necessary. It never collects command lines or resolves
@@ -227,3 +228,77 @@ hosted runner, with no explicit container or image deletion commands.
 The earlier local Docker limitation still applies to this Mac; adding the
 workflow does not establish that the remote jobs have passed. Check their
 GitHub Actions results after pushing this commit.
+
+## Windows snapshot (milestone 4)
+
+Use `python -m dialtone_watcher.snapshot` or the same plain Python
+`take_snapshot()` function. The collector imports safely on other platforms;
+winreg and ctypes' Windows DLL access are loaded only inside Windows methods.
+Processes and connections use per-process psutil reads, with the older
+`connections()` fallback. AccessDenied, NoSuchProcess and ZombieProcess are
+counted by source while other records survive. System, Registry and Idle can
+have no executable path; these processes remain present with unknown trust
+and a separate informational count. CPU first samples may be zero.
+
+Publisher and trust come from PowerShell `Get-AuthenticodeSignature` and
+`ConvertTo-Json`. A constant PowerShell program receives at most 32 paths as
+JSON over stdin; paths are never interpolated into executable program text.
+The collector uses `-NoProfile -NonInteractive`, UTF-8 JSON output, a ten-second
+subprocess timeout, per-snapshot caches, at most 100 unique executables and a
+15-second cumulative signature budget plus one in-flight batch. Batch calls
+and measured elapsed seconds appear in visibility notes. Valid maps to verified,
+NotSigned to unsigned; HashMismatch, NotTrusted, UnknownError and other statuses
+remain unknown and are counted. Publisher is only the signer subject's CN,
+not its complete certificate subject. Missing PowerShell, policy blocks,
+malformed output and timeouts produce partial results, not execution-policy
+bypasses. There are no certificate or reputation services owned by this project.
+
+**Offline restriction:** the Windows trust provider can retrieve certificates
+or revocation information. Before invoking the signature cmdlet, the constant
+PowerShell script checks local adapter state and defers all assessments if a
+non-loopback adapter is up, or if that check fails. Those results are unknown
+with an `OfflineRequired` note; no interface or firewall setting is changed.
+On a disconnected machine the cmdlet uses locally available trust material.
+The check is conservative and is not an OS-level network sandbox: network state
+must remain disconnected during assessment. The collector never makes HTTP or
+DNS queries, probes destinations, or accesses UNC executables or Startup folders.
+UNC and device namespaces are skipped for hashing and signatures, and redacted
+in all returned metadata, including extended UNC syntax. Executable hashes use
+the shared bounded, nonblocking, chunked hasher.
+
+Startup inventory includes Run/RunOnce under HKLM and HKCU in both registry
+views (the 32-bit view covers WOW6432Node), the current account and common
+Startup folders, logon/boot-triggered scheduled tasks and automatic services.
+The primary task query uses Get-ScheduledTask and emits no task actions,
+arguments or principal/account fields. If unavailable, a read-only
+`schtasks /query /fo csv /v` fallback supports English column names and reports
+localized/unsupported CSV output as unavailable rather than misinterpreting it.
+Other accounts' startup settings, StartupApproved overrides, shortcut targets
+and arbitrary task schedules are outside this inventory. Folder symlinks,
+junctions and link entries are skipped; ordinary `.lnk` filenames are listed
+without opening or resolving the shortcut. Registry command values and service
+command lines are discarded completely. Configuration does not prove execution;
+folder enabled status is left unknown because StartupApproved is not inspected.
+
+Administrator status comes from IsUserAnAdmin for the current token. For broader
+visibility, manually launch the trusted Python environment with “Run as
+administrator.” UAC elevation does not expose every protected process; vanished
+processes cannot be recovered. The server never elevates itself, changes
+registry values, starts/stops services or tasks, kills processes, or changes
+PowerShell execution policy. Every permission limitation is summarized without
+returning raw tool diagnostics or usernames.
+
+### Windows verification status
+
+Windows collector tests run in the existing `windows-latest` Python 3.11/3.12
+CI matrix, including a `windows_integration` test that is skipped on other
+platforms. Local validation on this Mac exercises mocked APIs and fixtures;
+it is not a Windows integration result. Candidate CI results will be recorded
+here after the validation branch runs. Live results are available in
+[GitHub Actions](https://github.com/Abhisheksinha1506/MCP/actions/workflows/ci.yml).
+
+Shared fixes in milestone 4: home redaction handles case-insensitive Windows
+paths, names with spaces and UNC locations; the shared hasher rejects network
+and device paths before opening them. Existing non-native macOS unit tests
+now mock their POSIX privilege API on Windows, and old selection tests use a
+platform that remains unsupported. macOS and Linux collector source is unchanged.

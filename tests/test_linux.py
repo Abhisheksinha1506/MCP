@@ -315,7 +315,7 @@ def test_privacy(isolated, monkeypatch, tmp_path, home):
 def test_selection(isolated, monkeypatch):
     monkeypatch.setattr(sys, 'platform', 'linux2')
     assert isinstance(select_collector(), LinuxCollector)
-    monkeypatch.setattr(sys, 'platform', 'win32')
+    monkeypatch.setattr(sys, 'platform', 'freebsd')
     with pytest.raises(NotImplementedError):
         select_collector()
 

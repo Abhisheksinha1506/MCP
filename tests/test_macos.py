@@ -16,6 +16,13 @@ from dialtone_watcher.collector.macos import MacOSCollector
 from dialtone_watcher.snapshot import select_collector, take_snapshot
 
 
+@pytest.fixture(autouse=True)
+def mock_non_native_privileges(monkeypatch):
+    if sys.platform != 'darwin':
+        import os
+        monkeypatch.setattr(os, 'geteuid', lambda: 501, raising=False)
+
+
 def completed(code=0, stderr='Authority=Example Publisher\nTeamIdentifier=EXAMPLE\n'):
     return subprocess.CompletedProcess([], code, '', stderr)
 
@@ -126,7 +133,7 @@ def test_privileges(monkeypatch):
 def test_selection(monkeypatch):
     monkeypatch.setattr(sys, 'platform', 'darwin')
     assert isinstance(select_collector(), MacOSCollector)
-    monkeypatch.setattr(sys, 'platform', 'win32')
+    monkeypatch.setattr(sys, 'platform', 'freebsd')
     with pytest.raises(NotImplementedError):
         select_collector()
 
