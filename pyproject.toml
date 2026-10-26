@@ -22,3 +22,6 @@ markers = [
     "windows_integration: real Windows snapshot (skipped on other platforms)",
     "linux_integration: real Linux collection and optional distro package-database verification",
 ]
+
+[tool.setuptools.data-files]
+"share/dialtone-watcher" = ["data/rules.yaml"]

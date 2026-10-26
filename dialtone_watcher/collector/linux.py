@@ -29,7 +29,7 @@ class LinuxCollector(Collector):
     def __init__(self, *, autostart_dirs=None, crontab_path='/etc/crontab',
                  cron_dir='/etc/cron.d', mounts_path='/proc/self/mounts',
                  max_hash_bytes=200 * 1024 * 1024, max_binaries=100,
-                 timeout=3, inspection_seconds=10):
+                 timeout=3, inspection_seconds=10, path_resolver=None):
         self.autostart_dirs = list(autostart_dirs) if autostart_dirs is not None else [
             Path(os.environ.get('XDG_CONFIG_HOME') or Path.home() / '.config') / 'autostart',
             Path('/etc/xdg/autostart')]
@@ -40,6 +40,7 @@ class LinuxCollector(Collector):
         self.max_binaries = max_binaries
         self.timeout = timeout
         self.inspection_seconds = inspection_seconds
+        self._path_resolver = path_resolver if path_resolver is not None else os.path.realpath
         self._failures = Counter()
         self._owners = {}
         self._hasher = ExecutableHasher(self._note, max_bytes=max_hash_bytes, max_binaries=max_binaries)
@@ -104,12 +105,22 @@ class LinuxCollector(Collector):
     def _ownership(self, paths):
         """Batch up to 64 literal paths: local database queries, never installs."""
         pending = list(dict.fromkeys(p for p in paths if p and p not in self._owners))
+        known = set(self._owners)
         for path in pending:
             self._owners[path] = None
         if self.package_manager is None:
             return
-        for start in range(0, len(pending), 64):
-            group = pending[start:start + 64]
+        aliases = {}
+        for path in pending:
+            try:
+                aliases[path] = self._path_resolver(path)
+            except OSError:
+                self._note('package ownership', 'canonical path unavailable')
+        queries = [path for path in dict.fromkeys(aliases.values()) if path not in known]
+        for path in queries:
+            self._owners.setdefault(path, None)
+        for start in range(0, len(queries), 64):
+            group = queries[start:start + 64]
             if self._lookup_seconds >= self.inspection_seconds:
                 self._note('package ownership', 'snapshot time budget exceeded', len(group))
                 continue
@@ -154,6 +165,10 @@ class LinuxCollector(Collector):
                     unowned = result.returncode == 1 and unowned_messages[manager] in diagnostic
                     reason = 'not owned by a package' if unowned else 'ownership unavailable or output unrecognized'
                     self._note('package ownership', reason)
+        # Tools can report the canonical name rather than a /usr/sbin alias.
+        # Preserve the original snapshot path and cache both lookup identities.
+        for original, canonical in aliases.items():
+            self._owners[original] = self._owners.get(canonical)
 
     def _parse_rpm(self, output, paths):
         for line in output.splitlines():

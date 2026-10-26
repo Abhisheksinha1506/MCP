@@ -48,6 +48,13 @@ class Finding:
     reason: str
     suggested_action: str
     platforms: list[str]
+    rule_id: str = ""
+    confidence: Literal["high", "medium", "low"] = "low"
+    evidence: list[str] = field(default_factory=list)
+    caveats: list[str] = field(default_factory=list)
+
+    def to_dict(self) -> dict:
+        return redact(asdict(self))
 
 
 @dataclass

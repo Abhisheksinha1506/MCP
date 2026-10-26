@@ -27,7 +27,7 @@ def isolated(monkeypatch, tmp_path):
     monkeypatch.setattr(os, 'geteuid', lambda: 1000, raising=False)
     monkeypatch.setattr(subprocess, 'run', Mock(side_effect=AssertionError('Unexpected subprocess')))
     return dict(autostart_dirs=[], crontab_path=tmp_path / 'crontab',
-                cron_dir=tmp_path / 'cron.d', mounts_path=FIXTURES / 'mounts.txt')
+                cron_dir=tmp_path / 'cron.d', mounts_path=FIXTURES / 'mounts.txt', path_resolver=lambda path: path)
 
 
 def result(stdout='', code=0, stderr=''):
@@ -396,3 +396,40 @@ def test_parent_disappeared(isolated, monkeypatch):
     c = LinuxCollector(**isolated, max_binaries=0)
     assert c.list_processes()[0]['parent'] is None
     assert any('parent names' in n for n in c.privilege_status()['visibility_notes'])
+
+
+
+@pytest.mark.parametrize('manager,stdout', [
+    ('dpkg', 'dpkg: /usr/bin/dpkg\n'),
+    ('rpm', 'rpm: /usr/bin/rpm\n'),
+    ('pacman', '/usr/bin/pacman is owned by pacman 7.1.0-1\n'),
+])
+def test_package_manager_alias_paths(isolated, monkeypatch, manager, stdout):
+    tool(monkeypatch, manager)
+    run = Mock(return_value=result(stdout))
+    monkeypatch.setattr(subprocess, 'run', run)
+    alias, canonical = '/usr/sbin/' + manager, '/usr/bin/' + manager
+    c = LinuxCollector(**{**isolated, 'path_resolver': lambda path: canonical if path == alias else path})
+    assert c.get_trust_signal(alias) == 'package_owned'
+    assert c.get_publisher(alias) == manager
+    assert c.get_trust_signal(canonical) == 'package_owned'
+    assert run.call_count == 1
+    assert run.call_args.args[0][-1] == canonical
+
+
+
+def test_alias_missing_owner_and_cached_canonical(isolated, monkeypatch):
+    tool(monkeypatch, 'dpkg')
+    run = Mock(return_value=result(code=1, stderr='dpkg-query: no path found matching pattern /usr/bin/example'))
+    monkeypatch.setattr(subprocess, 'run', run)
+    resolver = lambda path: '/usr/bin/example'
+    c = LinuxCollector(**{**isolated, 'path_resolver': resolver})
+    assert c.get_trust_signal('/usr/sbin/example') == 'unknown'
+    assert c.get_trust_signal('/usr/bin/example') == 'unknown'
+    assert run.call_count == 1
+    run.reset_mock()
+    run.return_value = result('example: /usr/bin/example\n')
+    c = LinuxCollector(**{**isolated, 'path_resolver': resolver})
+    assert c.get_trust_signal('/usr/bin/example') == 'package_owned'
+    assert c.get_trust_signal('/usr/sbin/example') == 'package_owned'
+    assert run.call_count == 1

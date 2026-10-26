@@ -1,8 +1,9 @@
 # Dialtone Watcher
 
-An offline, advice-only local MCP server under development. Milestones 1–4 provide
-the metadata schema, redaction, SQLite storage, and collectors for macOS, Linux
-and Windows. MCP tools, rules and findings are planned.
+An offline, advice-only local MCP server under development. Milestones 1–5 provide
+the metadata schema, redaction, SQLite storage, collectors for macOS, Linux
+and Windows, and a local rules/findings engine. MCP tools and server wiring
+are planned for milestone 6.
 
 Requires Python 3.11+. From this folder:
 
@@ -329,3 +330,213 @@ and device paths before opening them. Existing non-native macOS unit tests
 now mock their POSIX privilege API on Windows; a Linux connection fixture uses
 a portable sentinel when AF_UNIX is absent; Unicode fixtures explicitly use
 UTF-8; and old selection tests use a platform that remains unsupported. macOS and Linux collector source is unchanged.
+
+## Rules and findings (milestone 5)
+
+`analyze(snapshot, rules)` operates on the existing Snapshot metadata only.
+It never collects additional data, opens executables, runs OS tools, resolves
+DNS, connects to destinations, persists data or changes the computer. There are
+no MCP tools or server code in this milestone. The plain demo explicitly takes
+a snapshot first, then analyzes it:
+
+```sh
+python scripts/inspect_findings.py
+```
+
+Python callers can use:
+
+```python
+from dialtone_watcher.findings import analyze
+from dialtone_watcher.rules import load_rules
+
+report = analyze(snapshot, load_rules(), min_severity="info")
+result = report.to_dict()
+```
+
+`result` contains findings, visible ignore suppressions, allowlist decisions,
+`not_assessed` entries and an explicit warning that no matches do not establish
+safety. Each finding includes type, redacted subject, severity, reason,
+suggested_action, platforms, rule_id, confidence, evidence and caveats. Results
+are ranked by severity, then stable type/subject/rule ordering. Suggestions are
+reversible review steps using Activity Monitor, Task Manager or systemctl and
+desktop startup settings; no deletion commands or automatic changes are made.
+
+### File format and validation
+
+The authoritative starter file is `data/rules.yaml`. Installed distributions
+also include it under `share/dialtone-watcher/rules.yaml` in the Python prefix.
+All five sections are required, even when empty: known_telemetry_domains,
+known_bloatware, trusted_publishers, core_os_allowlist and ignore_list.
+Every entry requires id, match, reason, confidence and platforms. Optional
+fields are severity and source_note. Confidence is high/medium/low; severity
+is info/low/medium; platforms is a nonempty list of macos/windows/linux or
+`"all"`. IDs must be unique across sections; `builtin.` is reserved.
+
+Within a match, predicates are ANDed. Separate entries express alternatives.
+Supported targets and fields:
+
+| Target | Fields | Operators |
+| --- | --- | --- |
+| process | name, publisher, path | exact, glob, regex |
+| startup | name or label (both use the schema's name), path | exact, glob, regex |
+| destination | domain | exact, suffix |
+| finding (ignore_list only) | rule_id, subject | exact, glob, regex |
+
+For example, a local user rule can suppress the documented combination check:
+
+```yaml
+- id: ignore.my-reviewed-combination
+  match:
+    target: finding
+    rule_id: {exact: builtin.unsigned_combination}
+  reason: I have reviewed this combination and prefer to hide these findings.
+  confidence: high
+  platforms: all
+  source_note: User choice; review before applying because this suppression is broad.
+```
+
+Place this entry under ignore_list in a complete rules file. Suppressions remain
+visible with the original rule ID, subject, ignore ID and plain-language reason.
+Subject patterns match the displayed redacted subject; prefer an exact rule ID
+or a narrowly scoped subject over a broad wildcard.
+
+Unknown sections/fields, duplicate YAML keys, missing/empty reasons, duplicate
+IDs, invalid platforms, invalid severity/confidence and invalid regexes reject
+the whole file with a clear validation error. No partial loading or fetching of
+includes is supported. Files are limited to 256 KB, sections to 1,000 entries,
+patterns to 256 characters, and match inputs to 4,096 characters. Oversized
+metadata is marked not assessed rather than silently treated as clean.
+
+Patterns match whole normalized values. Globs use Python fnmatch semantics
+(`*` can cross directory separators). Regexes are compiled once per case mode;
+the supported safe subset has literals, anchors, character classes, escaped
+punctuation and at most one quantified single atom (`*`, `+` or `?`). Groups,
+alternation, backreferences, lookarounds and brace repetition are rejected.
+Use globs or separate rules when the restricted regex language is insufficient.
+Long-input tests guard matching cost. Linux paths retain case and literal
+backslashes. Windows paths normalize separators, and Windows/macOS path and
+name matching ignore case. Publisher matching ignores case on every OS.
+Path rules operate on redacted paths: use `~/Downloads/*`, not a full account
+home directory. Regex path rules use forward slashes for Windows.
+
+Domains normalize case, trailing dots and IDNA. A suffix includes the apex and
+proper subdomains, with a label boundary: `.example.com` cannot match
+`notexample.com`. Domains come only from the snapshot's locally supplied
+resolved_domain or a literal domain already in remote_host. IP addresses without
+locally known names are not classified by domain rules; no DNS or IP reputation
+lookup is performed.
+
+### Classification policy and limits
+
+Explicit known_bloatware matches produce junk findings; explicit telemetry
+endpoint matches are described as **possible telemetry**. Default severities
+are info for bloatware and low for telemetry, subject to confidence caps and
+optional overrides. The starter telemetry entry explicitly uses info because
+an endpoint alone cannot show whether data collection was requested.
+
+Confidence always caps severity: low → info, medium → low, high → medium.
+There is no severity above medium. Restricted claim words require an explicit
+high-confidence rule reason; built-in explanations use unusual or possible
+telemetry. `unknown` trust is neutral and never creates or raises a finding.
+Unsigned alone creates no finding. The only generic combination inference is:
+
+- Unsigned plus a temporary/downloads location, an enabled startup entry with
+  the same executable path, or an observed network connection: unusual, low,
+  medium confidence.
+- Unsigned plus all three of those other signals: unusual, medium, high
+  confidence in the observed combination (not a claim of unwanted intent).
+
+Connections carry only process_name in the existing schema. Network activity
+is used as a process signal only when that name identifies a single visible
+process. Ambiguous instances are marked not assessed. Startup association uses
+an exact normalized executable path, never a fuzzy label or a command line.
+Trusted publisher rules are explanatory context only: they do not verify
+identity, hide explicit matches or increase severity.
+
+The core allowlist wins before classification. It requires a name AND an
+expected path or publisher. A same-name file at a different **known** location
+produces an unusual identity-review finding, rather than receiving core status.
+Missing location metadata produces a not-assessed identity entry, not an
+inference based on unknown trust. One genuine core process cannot hide a
+same-name process elsewhere or its possible telemetry. Empty-path System and
+kernel_task entries reflect limited kernel-context metadata; they are not proof
+of file identity. Nonstandard Windows installation directories may need a
+reviewed local allowlist adjustment.
+
+Visibility notes are legacy strings, so source attribution is conservative.
+Permission/coverage limitations, missing domains, unknown trust and oversized
+fields become explicit assessment gaps. Affected findings receive caveats;
+limitations in unrelated sources do not raise finding severity. No findings
+must never be interpreted as a guarantee of safety or complete visibility.
+
+### Starter provenance — every entry needs human review
+
+This small starter set is reference data, not an endorsement or a guarantee.
+Every row below is **needs human review**, and every YAML entry has that label
+in source_note. No third-party app is pre-labelled as unwanted: known_bloatware
+and ignore_list start empty. No Apple publisher CN is guessed when signature
+metadata is unavailable. Sources were checked on 2026-10-26; source pages are
+never fetched by the rules engine.
+
+| Rule ID | What justifies it | Review status |
+| --- | --- | --- |
+| mozilla.firefox.telemetry | Mozilla explicitly lists incoming.telemetry.mozilla.org under [Telemetry](https://support.mozilla.org/en-US/kb/domains-allow-firefox). Applies to all three Firefox desktop platforms; consent remains unknown. | needs human review |
+| core.macos.launchd | Apple's [launchd manual source](https://github.com/apple-oss-distributions/launchd/blob/main/man/launchd.8) identifies the daemon manager; local read-only codesign inspection verified the /sbin/launchd path. | needs human review |
+| core.macos.kernel-task | Apple identifies [kernel_task as a system process](https://support.apple.com/en-us/102172). The blank executable is a limited kernel-context representation. | needs human review |
+| core.linux.systemd-usr | The upstream [systemd manual](https://www.freedesktop.org/software/systemd/man/251/init.html) names /usr/lib/systemd/systemd. | needs human review |
+| core.linux.systemd-lib | Debian bookworm's [systemd file list](https://packages.debian.org/bookworm/amd64/systemd/filelist) documents /lib/systemd/systemd. | needs human review |
+| core.linux.init | The upstream [systemd manual](https://www.freedesktop.org/software/systemd/man/251/init.html) describes /sbin/init as the boot entry point. | needs human review |
+| core.windows.system | Microsoft includes System among its [critical system services](https://learn.microsoft.com/en-us/windows/win32/rstmgr/critical-system-services). Blank executable metadata does not verify identity. | needs human review |
+| core.windows.svchost-system32 | Microsoft's [service-host discussion](https://azure.microsoft.com/en-us/blog/ways-to-use-azure-security-center-log-analytics-for-threat-hunting/) identifies system32 and SysWOW64 locations. The rule covers standard Windows installation directories. | needs human review |
+| core.windows.svchost-wow64 | The same [Microsoft source](https://azure.microsoft.com/en-us/blog/ways-to-use-azure-security-center-log-analytics-for-threat-hunting/) documents the SysWOW64 variant. | needs human review |
+| core.windows.csrss | Microsoft's [protocol exclusion example](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wsrm/7f4ee0ea-be67-4cca-a44c-ad6bfc7da803) supplies the system32/csrss.exe path. | needs human review |
+| core.windows.explorer | Microsoft's [Sysinternals reference sample](https://download.microsoft.com/download/a/f/a/afab0aee-5bcb-445d-9e1a-a45214fa4e5f/9780735656727_samplechapters.pdf) uses c:/windows/explorer.exe. This is a standard-layout policy. | needs human review |
+| publisher.microsoft-windows | The same [Sysinternals sample](https://download.microsoft.com/download/a/f/a/afab0aee-5bcb-445d-9e1a-a45214fa4e5f/9780735656727_samplechapters.pdf) documents the Microsoft Windows signer CN; used only as context. | needs human review |
+| publisher.systemd-package | Debian's [systemd package description](https://packages.debian.org/stable/systemd) identifies the system/service manager package; used only as provenance context. | needs human review |
+
+Clean-machine fixtures cover macOS, Linux and Windows, including legitimate
+telemetry and unsigned development tools, and assert no findings above info.
+Additional tests cover every matcher, validation errors, confidence caps,
+look-alike names, allowlist precedence, visible suppressions, privacy, offline
+analysis and partial visibility. Real-snapshot results and CI status are
+recorded below after validation; earlier milestone results remain historical.
+
+### Milestone 5 verification
+
+On 2026-10-26 the final code candidate `29142a1` passed
+[all seven CI jobs](https://github.com/Abhisheksinha1506/MCP/actions/runs/40357595177):
+Ubuntu, macOS and Windows on Python 3.11/3.12, plus the separate Debian, Fedora
+and Arch container integration job. No OS is allowed to fail. The final
+milestone commit has the same implementation and tests; only this verification
+record and the README introduction were updated after the candidate ran.
+
+Fresh isolated Python 3.13 venv on this Mac: **282 passed, 2 skipped** in
+5.42 seconds, without plugin flags. The local venv was provisioned offline
+from the already approved installed dependencies. All 107 rules/findings tests
+passed, including clean-machine and bounded-matching regressions.
+
+The real macOS sample produced these counts:
+
+| Type | Count | Severity | Count |
+| --- | --- | --- | --- |
+| junk | 0 | info | 0 |
+| telemetry | 0 | low | 0 |
+| unusual | 0 | medium | 0 |
+
+There were 13 explicit assessment gaps, two allowlist decisions and no ignore
+suppressions. No findings matched, so there are no top-five findings to list.
+This is not a safety verdict: permissions, trust inspection and missing locally
+known domains limited what could be assessed. Unknown trust was not converted
+into a negative finding, and no live rule was invented to make the sample
+produce a result. The local demo prints redacted subjects when findings exist.
+
+One pre-existing CI blocker was fixed as part of satisfying the green-CI
+requirement: Fedora and Arch located their package managers through /usr/sbin
+aliases, while ownership tools reported canonical /usr/bin paths. Linux
+ownership lookups now canonicalize local aliases, preserve the original
+snapshot paths, and cache both identities. Regression tests cover successful,
+unowned and cached alias queries without using a real package manager. No
+macOS or Windows collector source was changed in this milestone. Temporary
+read-only CI diagnostics were removed after confirming the cause. Earlier
+milestone notes about failing Fedora/Arch checks are historical; this candidate
+passed all three distro integrations.

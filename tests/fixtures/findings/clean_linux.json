@@ -1,0 +1,40 @@
+{
+  "os": "linux",
+  "hostname": "fixture-machine",
+  "privilege_level": "standard",
+  "processes": [
+    {
+      "name": "systemd",
+      "exe_path": "/usr/lib/systemd/systemd",
+      "trust_signal": "unknown"
+    },
+    {
+      "name": "init",
+      "exe_path": "/sbin/init",
+      "trust_signal": "unknown"
+    },
+    {
+      "name": "Firefox",
+      "exe_path": "/usr/lib/firefox/firefox",
+      "trust_signal": "package_owned"
+    },
+    {
+      "name": "Example Dev Tool",
+      "exe_path": "~/bin/devtool",
+      "trust_signal": "unknown"
+    }
+  ],
+  "connections": [
+    {
+      "process_name": "Firefox",
+      "remote_host": "192.0.2.1",
+      "remote_port": 443,
+      "protocol": "tcp",
+      "resolved_domain": "incoming.telemetry.mozilla.org"
+    }
+  ],
+  "startup_items": [],
+  "visibility_notes": [
+    "Some protected process metadata is unavailable."
+  ]
+}

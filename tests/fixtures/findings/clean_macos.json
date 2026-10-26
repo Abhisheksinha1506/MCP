@@ -1,0 +1,40 @@
+{
+  "os": "macos",
+  "hostname": "fixture-machine",
+  "privilege_level": "standard",
+  "processes": [
+    {
+      "name": "launchd",
+      "exe_path": "/sbin/launchd",
+      "trust_signal": "unknown"
+    },
+    {
+      "name": "kernel_task",
+      "exe_path": "",
+      "trust_signal": "unknown"
+    },
+    {
+      "name": "Firefox",
+      "exe_path": "/Applications/Firefox.app/Contents/MacOS/firefox",
+      "trust_signal": "verified"
+    },
+    {
+      "name": "Example Dev Tool",
+      "exe_path": "~/bin/devtool",
+      "trust_signal": "unsigned"
+    }
+  ],
+  "connections": [
+    {
+      "process_name": "Firefox",
+      "remote_host": "192.0.2.1",
+      "remote_port": 443,
+      "protocol": "tcp",
+      "resolved_domain": "incoming.telemetry.mozilla.org"
+    }
+  ],
+  "startup_items": [],
+  "visibility_notes": [
+    "Some protected process metadata is unavailable."
+  ]
+}
