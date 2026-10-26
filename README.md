@@ -201,3 +201,29 @@ account and preserves the public root privilege value; explicit home replacement
 respects path boundaries. Executable hashing is shared by macOS and Linux and
 uses nonblocking open plus fstat to prevent a file replaced by a FIFO from
 hanging a snapshot. No Windows collector changes were made.
+
+## GitHub Actions CI
+
+`.github/workflows/ci.yml` runs on pushes, pull requests and manual dispatch.
+The pytest matrix covers `ubuntu-latest`, `macos-latest` and `windows-latest`,
+each with Python 3.11 and 3.12. Every combination creates a fresh virtual
+environment, installs `.[test]`, and runs the full pytest suite without special
+plugin flags. Platform-specific integration tests run only on their own OS.
+
+**Windows jobs temporarily use `continue-on-error` until milestone 4.** The
+Windows collector is not implemented, and existing portability tests may fail.
+Those jobs still run and expose failures, but do not fail the overall workflow.
+Failures in Ubuntu, macOS or the Docker integration job fail the workflow. Remove
+the Windows exception once milestone 4 resolves the outstanding failures.
+
+A separate job uses the GitHub-hosted Ubuntu runner's Docker to build the three
+existing distro test images and run `scripts/test_linux_docker.sh`. The test
+containers exercise Debian/dpkg, Fedora/rpm and Arch/pacman, including real
+package ownership lookups. Dependency installation and image preparation use
+network access in CI; snapshot collection and the integration test containers
+run with networking disabled. Containers are retained for the duration of the
+hosted runner, with no explicit container or image deletion commands.
+
+The earlier local Docker limitation still applies to this Mac; adding the
+workflow does not establish that the remote jobs have passed. Check their
+GitHub Actions results after pushing this commit.

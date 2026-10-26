@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    name: Pytest (${{ matrix.os }}, Python ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    # Temporary until Windows collection and portability work land in milestone 4.
+    continue-on-error: ${{ matrix.os == 'windows-latest' }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          clean: false
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Create fresh venv, install and run pytest
+        shell: bash
+        run: |
+          python -m venv .venv
+          venv_python=".venv/bin/python"
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            venv_python=".venv/Scripts/python.exe"
+          fi
+          "$venv_python" -m pip install -e ".[test]"
+          "$venv_python" -m pytest -q
+
+  linux-containers:
+    name: Linux integration (Debian, Fedora, Arch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          clean: false
+          persist-credentials: false
+      - name: Prepare distro test images
+        run: |
+          docker build -t dialtone-watcher-test:debian -f scripts/docker/debian.Dockerfile .
+          docker build -t dialtone-watcher-test:fedora -f scripts/docker/fedora.Dockerfile .
+          docker build -t dialtone-watcher-test:arch -f scripts/docker/arch.Dockerfile .
+      - name: Run Linux integration tests with networking disabled
+        run: scripts/test_linux_docker.sh
