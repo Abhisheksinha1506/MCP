@@ -53,3 +53,26 @@ jobs:
           docker build -t dialtone-watcher-test:arch -f scripts/docker/arch.Dockerfile .
       - name: Run Linux integration tests with networking disabled
         run: scripts/test_linux_docker.sh
+      - name: Diagnose local package database failures
+        if: failure()
+        run: |
+          for family in fedora arch; do
+            docker run --network=none --read-only \
+              --mount "type=bind,source=$GITHUB_WORKSPACE,target=/workspace,readonly" \
+              --workdir /workspace --tmpfs /tmp:rw,nosuid,nodev \
+              --env HOME=/tmp/dialtone-home --env PYTHONDONTWRITEBYTECODE=1 \
+              "dialtone-watcher-test:$family" python3 -c '
+          import json
+          from dialtone_watcher.collector.linux import LinuxCollector
+          from dialtone_watcher.privacy import redact
+          c = LinuxCollector()
+          original = c._run
+          def traced(command, source):
+              result = original(command, source)
+              if result is not None:
+                  print(json.dumps(redact({"manager": c.package_manager, "returncode": result.returncode, "stdout_excerpt": result.stdout[:2000], "stderr_excerpt": result.stderr[:2000]})))
+              return result
+          c._run = traced
+          print(c.get_trust_signal(c._tools[c.package_manager]))
+          '
+          done
