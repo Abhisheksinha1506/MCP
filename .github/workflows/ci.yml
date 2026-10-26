@@ -70,7 +70,7 @@ jobs:
           def traced(command, source):
               result = original(command, source)
               if result is not None:
-                  print(json.dumps(redact({"manager": c.package_manager, "returncode": result.returncode, "stdout_excerpt": result.stdout[:2000], "stderr_excerpt": result.stderr[:2000]})))
+                  print(json.dumps(redact({"manager": c.package_manager, "requested": command[-1], "returncode": result.returncode, "stdout_excerpt": result.stdout[:2000], "stderr_excerpt": result.stderr[:2000]})))
               return result
           c._run = traced
           print(c.get_trust_signal(c._tools[c.package_manager]))
