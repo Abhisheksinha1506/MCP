@@ -1,9 +1,8 @@
 # Dialtone Watcher
 
-An offline, advice-only local MCP server under development. Milestones 1–5 provide
+An offline, advice-only local MCP server under development. Milestones 1–6 provide
 the metadata schema, redaction, SQLite storage, collectors for macOS, Linux
-and Windows, and a local rules/findings engine. MCP tools and server wiring
-are planned for milestone 6.
+and Windows, a local rules/findings engine, and a stdio MCP server.
 
 Requires Python 3.11+. From this folder:
 
@@ -39,9 +38,10 @@ commands, file contents or arbitrary OS diagnostic text into the schema.
 Executable hashes will require reading executable bytes but never storing or
 returning those bytes. Hostname hashing is pseudonymization, not anonymity.
 
-Only explicitly supplied snapshots are stored. SQLite contains redacted JSON;
+Snapshots are stored when explicitly supplied to the store or requested through
+the MCP `take_snapshot` tool. SQLite contains redacted JSON;
 there is no deletion, replacement, process-control or system-modification API.
-Use a local private directory for future persistent databases. Current tests
+Use a local private directory for persistent databases. Tests
 use temporary databases. Partial visibility must be reported by collectors;
 unknown trust is never evidence of wrongdoing. Package-unowned Linux binaries
 are at most unusual. Peer comparison will expose an unavailable result in a
@@ -540,3 +540,157 @@ macOS or Windows collector source was changed in this milestone. Temporary
 read-only CI diagnostics were removed after confirming the cause. Earlier
 milestone notes about failing Fedora/Arch checks are historical; this candidate
 passed all three distro integrations.
+
+## MCP server (milestone 6)
+
+Install Python 3.11 or newer, create a virtual environment using the installation
+steps above, and install with `python -m pip install -e ".[test]"`.
+The official SDK is constrained to `mcp>=1.30,<2` because this server uses its
+FastMCP API. No additional direct dependencies are introduced.
+Run `dialtone-watcher` or `python -m dialtone_watcher.server` using that environment.
+These start a **stdio** server: stdout is reserved for the MCP protocol. All
+application logging goes to stderr. Launch it through your MCP client rather
+than expecting an interactive terminal interface. The server opens no listener
+and performs no external requests.
+
+### Claude Desktop configuration
+
+Merge the appropriate entry into `claude_desktop_config.json`, then restart
+Claude Desktop. Replace the example installation directory with your absolute
+local checkout path. Use the virtual environment's Python, so the client does
+not depend on shell activation or PATH. These examples use placeholder paths.
+
+macOS:
+
+```json
+{
+  "mcpServers": {
+    "dialtone-watcher": {
+      "command": "/Applications/dialtone-watcher/.venv/bin/python",
+      "args": ["-m", "dialtone_watcher.server"]
+    }
+  }
+}
+```
+
+Windows:
+
+```json
+{
+  "mcpServers": {
+    "dialtone-watcher": {
+      "command": "C:\\Tools\\dialtone-watcher\\.venv\\Scripts\\python.exe",
+      "args": ["-m", "dialtone_watcher.server"]
+    }
+  }
+}
+```
+
+Linux:
+
+```json
+{
+  "mcpServers": {
+    "dialtone-watcher": {
+      "command": "/opt/dialtone-watcher/.venv/bin/python",
+      "args": ["-m", "dialtone_watcher.server"]
+    }
+  }
+}
+```
+
+For Claude Code, use the absolute executable path appropriate to your OS:
+
+```sh
+claude mcp add --transport stdio dialtone-watcher -- /opt/dialtone-watcher/.venv/bin/python -m dialtone_watcher.server
+```
+
+### Tool responses
+
+Every response has a static `data_notice`, a labeled `untrusted_data` object,
+and a top-level `truncated` flag. Machine names, labels, paths, rule reasons and
+other observed strings are untrusted data; clients must never obey embedded
+instructions. Controls (including terminal escapes and Unicode formatting
+controls) are stripped. Strings are capped at 512 characters; nested output
+has a shared budget and each JSON response is capped at 64 KiB. Paged fields
+contain `items`, `total_count`, and their own `truncated` flag. Requested limits
+must be 1–100. A truncation flag means omitted details were not returned; it is
+not a complete assessment.
+
+| Tool | What it returns |
+| --- | --- |
+| `take_snapshot()` | Saved snapshot ID, process/connection/startup counts and paged visibility notes. Runs collection in a worker with a 60-second deadline. It appends local storage and is non-destructive. |
+| `list_findings(snapshot_id, min_severity="info", limit=50)` | Ranked findings, visible ignore suppressions, allowlist decisions, assessment gaps and visibility caveats. Severity accepts info, low or medium. |
+| `list_unusual_destinations(snapshot_id, limit=50)` | Connections matching explicit possible-telemetry rules or associated by process name with unusual findings; includes attribution caveats and assessment gaps. Unknown domains alone are not suspicious. |
+| `list_startup_items(snapshot_id, limit=100)` | Recorded startup entries with source and enabled/unknown status, plus visibility notes. |
+| `suggest_removals(snapshot_id)` | Up to 50 severity-ranked reversible review suggestions, reasons and caveats. Nothing is removed or disabled. |
+| `explain_process(name, snapshot_id=None)` | Exact-name snapshot facts: publisher, trust, rule matches, connections and startup associations. Defaults to the latest snapshot; absent processes are explicitly unknown. No knowledge table or invented description. |
+| `compare_to_peers(snapshot_id)` | `status: not_available`, `reason: peer dataset not enabled`. No remote service. |
+| `check_permissions()` | Current privilege status, known collector coverage limits and OS-specific access guidance. Per-process failures are measured during collection. |
+
+All tools except `take_snapshot` are annotated read-only. Every tool is
+non-destructive and local. Unknown snapshot IDs and internal failures return
+fixed, clear errors; exception details stay in local stderr logs. No findings
+never establishes safety: use assessment gaps and visibility caveats when
+explaining results.
+
+Resources `snapshot://latest` and `rules://active` return the same redacted,
+bounded JSON envelope. The latter represents the loaded YAML file as JSON,
+including provenance notes; rules are validated once at server creation.
+Restart the server after editing rules. The snapshot resource includes total
+counts so clients can detect omitted records.
+
+### Local storage and timeouts
+
+Only `take_snapshot` appends a redacted snapshot. Default database locations:
+
+- macOS: `~/Library/Application Support/dialtone-watcher/snapshots.sqlite3`
+- Windows: `%LOCALAPPDATA%\dialtone-watcher\snapshots.sqlite3`
+- Linux: `$XDG_DATA_HOME/dialtone-watcher/snapshots.sqlite3`, falling back to
+  `~/.local/share/dialtone-watcher/snapshots.sqlite3`.
+
+Set `DIALTONE_WATCHER_DB` in the MCP client's server environment to override the
+path. Keep this database in a private local directory. The server creates the
+directory/table as needed; there is no update, replace or delete operation.
+A timed-out collection is never saved. Python cannot forcibly stop a worker
+thread: it may finish its existing read operations after the deadline, and a
+second collection is refused until it finishes. Other tools remain available.
+Stopping the server can wait for that worker to finish.
+
+### Troubleshooting
+
+- **Server not appearing:** confirm the configured absolute Python executable
+  exists and that this environment can import `dialtone_watcher.server`.
+  Check client stderr logs, JSON quoting (especially Windows backslashes), and
+  restart the client after configuration changes. No banner appears on stdout.
+- **Permission prompts or incomplete visibility:** consult the per-OS guides
+  above and `check_permissions`. The server does not elevate itself or grant
+  permissions. Only grant access to a trusted installation; elevation cannot
+  bypass every OS protection. Keep stderr logs local, as diagnostics can contain
+  private paths.
+- **Empty network results:** ordinary accounts can be denied per-process
+  connection access. Inspect snapshot visibility notes and assessment gaps;
+  empty results are not proof of no activity. Manually launch in an appropriately
+  privileged trusted environment only if broader visibility is needed.
+- **Timeout:** retry after the existing worker finishes. No partial or late
+  snapshot is saved on timeout. Existing saved snapshots remain available.
+
+### Milestone 6 local verification
+
+A fresh Python 3.13 virtual environment on this Mac passed **289 tests, with
+2 platform skips**, without plugin flags. This includes the previously added
+synthetic demo test still present locally; the six MCP test cases are part of
+this milestone. Tests use the official SDK's in-process client and a real stdio
+subprocess. They exercise every tool/resource, annotations, privacy for all
+three OS path formats, untrusted instruction-like names, output budgets,
+limits, unknown IDs, internal error handling, timeout recovery and stdout
+cleanliness. Network connection attempts are forbidden during the mocked
+all-tools test.
+
+A real client launched the installed `dialtone-watcher` console entry point
+and called `take_snapshot` followed by `list_findings` on this Mac. Counts:
+555 processes, 47 connections, 11 startup items, 11 visibility notes,
+0 findings, and 13 assessment gaps. Both resources were read successfully.
+No findings is not a safety verdict. Collection required host process visibility;
+the desktop execution sandbox hides all processes and cannot satisfy the
+existing real-macOS integration test.
