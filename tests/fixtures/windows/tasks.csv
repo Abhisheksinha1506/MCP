@@ -1,0 +1,4 @@
+"HostName","TaskName","Status","Task To Run","Run As User","Schedule Type","Scheduled Task State"
+"private-machine","\Example\Example Logon","Ready","C:\Users\fixtureperson\helper.exe --token=private-token","fixtureperson","At logon time","Enabled"
+"private-machine","\Example\Example Boot","Disabled","C:\Users\fixtureperson\helper.exe --password=private-token","fixtureperson","At system start up","Disabled"
+"private-machine","\Example\Daily","Ready","C:\Users\fixtureperson\helper.exe","fixtureperson","Daily","Enabled"

@@ -12,7 +12,10 @@ def select_collector():
     if sys.platform.startswith('linux'):
         from .collector.linux import LinuxCollector
         return LinuxCollector()
-    raise NotImplementedError('Only macOS and Linux collection are implemented')
+    if sys.platform == 'win32':
+        from .collector.windows import WindowsCollector
+        return WindowsCollector()
+    raise NotImplementedError('Unsupported operating system')
 
 
 def take_snapshot(collector=None):

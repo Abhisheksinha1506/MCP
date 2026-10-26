@@ -178,7 +178,7 @@ def test_connection_protocols_and_fallback(isolated, monkeypatch):
     p.net_connections.return_value += [SimpleNamespace(raddr=('2001:db8::1', 53),
         family=socket.AF_INET6, type=socket.SOCK_DGRAM),
         SimpleNamespace(raddr=(), family=socket.AF_INET, type=socket.SOCK_STREAM),
-        SimpleNamespace(raddr='local', family=socket.AF_UNIX, type=socket.SOCK_STREAM)]
+        SimpleNamespace(raddr='local', family=getattr(socket, 'AF_UNIX', -1), type=socket.SOCK_STREAM)]
     monkeypatch.setattr(psutil, 'process_iter', lambda: iter([p]))
     c = LinuxCollector(**isolated)
     assert [r['protocol'] for r in c.list_connections()] == ['tcp', 'udp']
@@ -315,7 +315,7 @@ def test_privacy(isolated, monkeypatch, tmp_path, home):
 def test_selection(isolated, monkeypatch):
     monkeypatch.setattr(sys, 'platform', 'linux2')
     assert isinstance(select_collector(), LinuxCollector)
-    monkeypatch.setattr(sys, 'platform', 'win32')
+    monkeypatch.setattr(sys, 'platform', 'freebsd')
     with pytest.raises(NotImplementedError):
         select_collector()
 

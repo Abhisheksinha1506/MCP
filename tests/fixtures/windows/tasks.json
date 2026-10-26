@@ -1,0 +1,4 @@
+[
+  {"Name": "Example Logon", "Source": "\\Example\\", "State": "Ready"},
+  {"Name": "Example Boot", "Source": "\\Example\\", "State": "Disabled"}
+]
