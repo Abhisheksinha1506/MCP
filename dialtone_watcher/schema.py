@@ -36,6 +36,8 @@ class StartupItem:
     path: str = ""
     enabled: bool | None = None
     source: str = ""
+    run_at_load: bool | None = None
+    keep_alive: bool | dict[str, bool] | None = None
 
 
 @dataclass
