@@ -211,11 +211,9 @@ each with Python 3.11 and 3.12. Every combination creates a fresh virtual
 environment, installs `.[test]`, and runs the full pytest suite without special
 plugin flags. Platform-specific integration tests run only on their own OS.
 
-**Windows jobs temporarily use `continue-on-error` until milestone 4.** The
-Windows collector is not implemented, and existing portability tests may fail.
-Those jobs still run and expose failures, but do not fail the overall workflow.
-Failures in Ubuntu, macOS or the Docker integration job fail the workflow. Remove
-the Windows exception once milestone 4 resolves the outstanding failures.
+**Windows jobs are required as of milestone 4.** The earlier temporary
+`continue-on-error` exception has been removed. Failures on any OS or in the
+Docker integration job fail the workflow.
 
 A separate job uses the GitHub-hosted Ubuntu runner's Docker to build the three
 existing distro test images and run `scripts/test_linux_docker.sh`. The test
@@ -300,5 +298,6 @@ here after the validation branch runs. Live results are available in
 Shared fixes in milestone 4: home redaction handles case-insensitive Windows
 paths, names with spaces and UNC locations; the shared hasher rejects network
 and device paths before opening them. Existing non-native macOS unit tests
-now mock their POSIX privilege API on Windows, and old selection tests use a
-platform that remains unsupported. macOS and Linux collector source is unchanged.
+now mock their POSIX privilege API on Windows; a Linux connection fixture uses
+a portable sentinel when AF_UNIX is absent; Unicode fixtures explicitly use
+UTF-8; and old selection tests use a platform that remains unsupported. macOS and Linux collector source is unchanged.

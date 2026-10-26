@@ -23,7 +23,7 @@ FIXTURES = Path(__file__).parent / 'fixtures/windows'
 
 
 def load(name):
-    return json.loads((FIXTURES / name).read_text())
+    return json.loads((FIXTURES / name).read_text(encoding='utf-8'))
 
 
 def result(data=None, code=0, stdout=None):
@@ -359,3 +359,35 @@ def test_real_windows_snapshot():
     assert 'c:\\\\users\\\\' not in encoded and 'c:/users/' not in encoded
     print(json.dumps({key: len(data[key]) for key in
                       ('processes', 'connections', 'startup_items', 'visibility_notes')}))
+
+
+
+def test_task_records_partial(isolated, monkeypatch):
+    powershell(monkeypatch, result([{'Name': 'Example', 'Source': '\\Example', 'State': []},
+                                   {'LimitedCount': 3}, None]))
+    c = WindowsCollector(**isolated)
+    tasks = c._tasks()
+    assert len(tasks) == 1 and tasks[0]['enabled'] is None
+    assert any('3 scheduled tasks' in n for n in c.privilege_status()['visibility_notes'])
+
+
+def test_startup_directory_unreadable(isolated, monkeypatch, tmp_path):
+    startup = tmp_path / 'Startup'
+    startup.mkdir()
+    c = WindowsCollector(startup_dirs=[startup])
+    monkeypatch.setattr(Path, 'iterdir', Mock(side_effect=PermissionError('private-token')))
+    assert c._startup_folders() == []
+    assert any('directory unreadable' in n for n in c.privilege_status()['visibility_notes'])
+    assert 'private-token' not in json.dumps(c.privilege_status())
+
+
+def test_service_enumeration_denied(isolated, monkeypatch):
+    monkeypatch.setattr(psutil, 'win_service_iter', Mock(side_effect=psutil.AccessDenied()))
+    c = WindowsCollector(**isolated)
+    assert c._services() == []
+    assert any('enumeration unavailable' in n for n in c.privilege_status()['visibility_notes'])
+
+
+def test_windows_home_case_boundary():
+    data = redact(r'c:\profiles\Fixture Person\app.exe', username='other', home=r'C:\Profiles\Fixture Person')
+    assert data == r'~\app.exe'

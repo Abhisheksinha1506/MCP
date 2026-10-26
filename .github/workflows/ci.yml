@@ -12,8 +12,6 @@ jobs:
   pytest:
     name: Pytest (${{ matrix.os }}, Python ${{ matrix.python }})
     runs-on: ${{ matrix.os }}
-    # Temporary until Windows collection and portability work land in milestone 4.
-    continue-on-error: ${{ matrix.os == 'windows-latest' }}
     timeout-minutes: 15
     strategy:
       fail-fast: false
