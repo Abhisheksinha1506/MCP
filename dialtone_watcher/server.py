@@ -80,6 +80,8 @@ def output(data):
 
     result = {'data_notice': DATA_NOTICE, 'untrusted_data': clean(redact(data)),
               'truncated': truncated}
+    # Removing controls can join previously separated private text. Redact again.
+    result = redact(result)
     if len(json.dumps(result).encode()) > MAX_RESPONSE_BYTES:
         return {'data_notice': DATA_NOTICE, 'untrusted_data': {'error': 'Response exceeds output budget.'},
                 'truncated': True}

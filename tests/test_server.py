@@ -1,6 +1,8 @@
 """Exercise the actual SDK transport without a pytest async plugin."""
 import asyncio
 import json
+from pathlib import Path
+import yaml
 import sys
 import socket
 import threading
@@ -48,8 +50,14 @@ def test_all_tools_resources_annotations_privacy_and_stdout(tmp_path, capfd, mon
     monkeypatch.setattr(socket.socket, 'connect', no_network)
     async def scenario(platform):
         snap = fixture_snapshot(platform)
+        active_rules = yaml.safe_load((Path(__file__).parent.parent / 'data/rules.yaml').read_text())
+        active_rules['known_telemetry_domains'][0]['source_note'] = (
+            INJECTION + '\x00 /Users/privatefixture/file /home/privatefixture/file '
+            + r'C:\Users\privatefixture\file')
+        rules_path = tmp_path / (platform + '.yaml')
+        rules_path.write_text(yaml.safe_dump(active_rules), encoding='utf-8')
         server = create_server(tmp_path / (platform + '.db'), collect=lambda: snap,
-                               collector_factory=Collector)
+                               collector_factory=Collector, rules_path=rules_path)
         async with create_connected_server_and_client_session(server) as client:
             tools = (await client.list_tools()).tools
             assert {t.name for t in tools} == {
@@ -197,7 +205,9 @@ def test_internal_errors_never_reach_client(tmp_path, capfd):
     assert capfd.readouterr().out == ''
 
 
-def test_output_budget_controls_and_all_path_styles():
+def test_output_budget_controls_and_all_path_styles(monkeypatch):
+    monkeypatch.setattr('dialtone_watcher.privacy.getpass.getuser', lambda: 'privatefixture')
+    assert output({'name': 'private\x00fixture'})['untrusted_data']['name'] == '[redacted]'
     value = output({'name': INJECTION + '\x00\x1b\u202e',
         'paths': [r'C:\Users\privatefixture\file', 'c:/uSeRs/privatefixture/file',
                   '/Users/privatefixture/file', '/home/privatefixture/file', '/root/file',
