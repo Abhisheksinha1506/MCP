@@ -180,3 +180,10 @@ def test_installed_rules_data_location(monkeypatch, tmp_path):
     monkeypatch.setattr(module, '__file__', str(tmp_path / 'package/rules.py'))
     monkeypatch.setattr(module.sysconfig, 'get_path', lambda name: str(tmp_path))
     assert module.load_rules().rules[0].id == 'fixture.example'
+
+
+
+@pytest.mark.parametrize('platform',['macos','windows','linux'])
+def test_unicode_identical_path_not_changed_before_regex_case_matching(platform):
+    rule = validate_rules(raw_rules(match={'target':'process','path':{'exact':'/Apps/İstanbul/Tool'}})).rules[0]
+    assert rule.matches('process', {'path':'/Apps/İstanbul/Tool'}, platform)

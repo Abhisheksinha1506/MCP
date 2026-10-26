@@ -44,12 +44,12 @@ def _mapping(loader, node, deep=False):
 _Loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _mapping)
 
 
-def normalize_path(value, platform):
+def normalize_path(value, platform, *, fold_case=True):
     value = redact(value)
     if platform == 'windows':
         value = value.replace('\\', '/')
     value = posixpath.normpath(value) if value else ''
-    return value.lower() if platform in {'windows', 'macos'} else value
+    return value.lower() if fold_case and platform in {'windows', 'macos'} else value
 
 
 def normalize_domain(value):
@@ -140,7 +140,7 @@ class Predicate:
                 return False
             return actual == self.value or self.operator == 'suffix' and actual.endswith('.' + self.value)
         if self.field == 'path':
-            actual = normalize_path(actual, platform)
+            actual = normalize_path(actual, platform, fold_case=False)
         else:
             actual = redact(actual)
         insensitive = self.field == 'publisher' or platform in {'windows', 'macos'}
