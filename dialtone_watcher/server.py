@@ -91,7 +91,7 @@ def output(data):
 def page(items, limit=50):
     if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= MAX_LIMIT:
         raise RequestError('limit must be an integer from 1 to 100.')
-    return {'items': items[:limit], 'total_count': len(items), 'truncated': len(items) > limit}
+    return {'total_count': len(items), 'truncated': len(items) > limit, 'items': items[:limit]}
 
 
 def default_database():
