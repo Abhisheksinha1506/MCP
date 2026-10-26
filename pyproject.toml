@@ -7,7 +7,10 @@ name = "dialtone-watcher"
 version = "0.1.0"
 description = "Offline, advice-only machine activity inspection through MCP"
 requires-python = ">=3.11"
-dependencies = ["mcp", "psutil", "PyYAML"]
+dependencies = ["mcp>=1.30,<2", "psutil", "PyYAML"]
+
+[project.scripts]
+dialtone-watcher = "dialtone_watcher.server:main"
 
 [project.optional-dependencies]
 test = ["pytest"]
