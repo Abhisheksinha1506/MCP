@@ -1,0 +1,3 @@
+example: /usr/bin/example
+example: /usr/share/doc/example/readme
+python3: /usr/bin/python3

@@ -12,6 +12,8 @@ class Collector(ABC):
     Trust signals: verified, unsigned, package_owned, unknown.
     """
 
+    os: str  # Normalized platform identity, supplied by each adapter.
+
     @abstractmethod
     def list_processes(self) -> list[dict[str, Any]]: ...
 

@@ -1,0 +1,3 @@
+PATH=/bin:/usr/bin
+@daily fixtureperson /home/fixtureperson/bin/job --token=private-token
+0 2 * * * fixtureperson /root/jobs/example --password=private-token

@@ -1,12 +1,10 @@
 """Read-only macOS metadata collection; no command lines or DNS resolution."""
 from collections import Counter
 from datetime import datetime, timezone
-import hashlib
 import os
 from pathlib import Path
 import plistlib
 import socket
-import stat
 import subprocess
 import time
 from xml.parsers.expat import ExpatError
@@ -14,6 +12,7 @@ from xml.parsers.expat import ExpatError
 import psutil
 
 from .base import Collector
+from .common import ExecutableHasher
 from ..privacy import redact
 
 _PROCESS_ERRORS = (psutil.AccessDenied, psutil.NoSuchProcess, psutil.ZombieProcess)
@@ -21,6 +20,8 @@ _PROCESS_ERRORS = (psutil.AccessDenied, psutil.NoSuchProcess, psutil.ZombieProce
 
 class MacOSCollector(Collector):
     """One instance per snapshot; caches and visibility counts have that lifetime."""
+
+    os = 'macos'
 
     def __init__(self, *, startup_dirs=None, max_hash_bytes=200 * 1024 * 1024,
                  max_binaries=100, timeout=3, inspection_seconds=10):
@@ -34,7 +35,7 @@ class MacOSCollector(Collector):
         self._inspection_elapsed = 0.0
         self._failures = Counter()
         self._signatures = {}
-        self._hashes = {}
+        self._hasher = ExecutableHasher(self._note, max_bytes=max_hash_bytes, max_binaries=max_binaries)
 
     def _note(self, source, reason):
         self._failures[(source, reason)] += 1
@@ -99,34 +100,7 @@ class MacOSCollector(Collector):
         return self._signature(exe_path)[1]
 
     def _sha256(self, path):
-        if not path:
-            return None
-        if path in self._hashes:
-            return self._hashes[path]
-        self._hashes[path] = None
-        if len(self._hashes) > self.max_binaries:
-            self._note('executable hashing', 'snapshot inspection budget exceeded')
-            return None
-        try:
-            if not stat.S_ISREG(os.stat(path).st_mode):
-                self._note('executable hashing', 'not a regular file')
-                return None
-            with open(path, 'rb') as stream:
-                if os.fstat(stream.fileno()).st_size > self.max_hash_bytes:
-                    self._note('executable hashing', 'file exceeds size limit')
-                    return None
-                digest = hashlib.sha256()
-                total = 0
-                while chunk := stream.read(1024 * 1024):
-                    total += len(chunk)
-                    if total > self.max_hash_bytes:
-                        self._note('executable hashing', 'file exceeds size limit')
-                        return None
-                    digest.update(chunk)
-                self._hashes[path] = digest.hexdigest()
-        except OSError:
-            self._note('executable hashing', 'file unreadable or disappeared')
-        return self._hashes[path]
+        return self._hasher.hash(path)
 
     def _processes(self):
         try:

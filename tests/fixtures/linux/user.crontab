@@ -1,0 +1,6 @@
+# Private fixtureperson comment
+MAILTO=fixtureperson@example.invalid
+SHELL=/bin/sh
+@reboot /home/fixtureperson/bin/helper --token=private-token
+*/5 * * * * /root/jobs/example --password=private-token
+invalid

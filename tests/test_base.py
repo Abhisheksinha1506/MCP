@@ -105,3 +105,11 @@ def test_finding_has_plain_language_fields():
     finding = Finding("unusual", "Example", "info", "Publisher is unavailable.",
                       "Review its origin before changing anything.", ["linux"])
     assert asdict(finding)["reason"]
+
+
+@pytest.mark.parametrize("home", ["/root", "/home/fixtureperson"])
+def test_explicit_home_boundary(home):
+    assert redact(home + "/bin/example", username="root", home=home) == "~/bin/example"
+    if home == "/root":
+        assert redact("/rooted/example", username="root", home=home) == "/rooted/example"
+    assert redact({"path": home, "args": ["secret"]}, username="root", home=home) == {"path": "~"}

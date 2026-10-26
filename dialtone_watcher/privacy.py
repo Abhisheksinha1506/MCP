@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 _HOME = re.compile(r"(?i)(?:[a-z]:[\\/]Users[\\/]|/(?:Users|home)/)[^\\/\s\"'<>:,;]+")
+_ROOT_HOME = re.compile(r'(?<![A-Za-z0-9_/])/root(?=[/\\\s"\'<>:,;]|$)')
 _SENSITIVE = {"username", "user", "uid", "gid", "cmdline", "command_line", "arguments", "args", "contents", "file_contents", "hostname"}
 
 
@@ -27,10 +28,12 @@ def redact(value: Any, *, username: str | None = None, home: str | None = None) 
 
     def clean(item: Any) -> Any:
         if isinstance(item, str):
-            text = _HOME.sub("~", item)
+            text = item
             if home_path and home_path not in ("/", "\\"):
-                text = text.replace(home_path, "~")
-            if account:
+                text = re.sub(re.escape(home_path) + r"(?=[\\/]|$)", "~", text)
+            text = _ROOT_HOME.sub("~", _HOME.sub("~", text))
+            # "root" is also the public privilege-level value, not private identity.
+            if account and account != "root":
                 text = re.sub(re.escape(account), "[redacted]", text, flags=re.IGNORECASE)
             return text
         if isinstance(item, Mapping):

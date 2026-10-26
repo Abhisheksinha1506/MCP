@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=Private fixtureperson display name
+Exec=/home/fixtureperson/bin/example --token=private-token
+X-GNOME-Autostart-enabled=true

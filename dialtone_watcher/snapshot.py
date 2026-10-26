@@ -9,7 +9,10 @@ def select_collector():
     if sys.platform == 'darwin':
         from .collector.macos import MacOSCollector
         return MacOSCollector()
-    raise NotImplementedError('Only macOS collection is implemented in milestone 2')
+    if sys.platform.startswith('linux'):
+        from .collector.linux import LinuxCollector
+        return LinuxCollector()
+    raise NotImplementedError('Only macOS and Linux collection are implemented')
 
 
 def take_snapshot(collector=None):
@@ -18,7 +21,7 @@ def take_snapshot(collector=None):
     connections = adapter.list_connections()
     startup_items = adapter.startup_items()
     status = adapter.privilege_status()
-    return normalize_snapshot(os='macos', hostname=socket.gethostname(),
+    return normalize_snapshot(os=adapter.os, hostname=socket.gethostname(),
         privilege_level=status['level'], processes=processes, connections=connections,
         startup_items=startup_items,
         visibility_notes=[*status['visibility_notes'], status.get('guidance', '')])

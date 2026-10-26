@@ -1,0 +1,2 @@
+/usr/bin/example is owned by example 1.2-1
+/usr/bin/python3 is owned by python 3.13-1

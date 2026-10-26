@@ -1,0 +1,7 @@
+UNIT FILE                STATE   PRESET
+example.service          enabled enabled
+example.timer            enabled disabled
+example.socket           enabled enabled
+example@.service         enabled enabled
+ignored.service          disabled enabled
+5 unit files listed.
