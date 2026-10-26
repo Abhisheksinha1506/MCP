@@ -1,0 +1,184 @@
+# Conservative starter set. Every entry needs human review.
+known_telemetry_domains:
+- id: mozilla.firefox.telemetry
+  match:
+    target: destination
+    domain:
+      exact: incoming.telemetry.mozilla.org
+  reason: Mozilla documents this endpoint for Firefox telemetry. Connection metadata
+    cannot show consent or the data sent.
+  confidence: high
+  platforms: all
+  source_note: 'needs human review; Mozilla Firefox Enterprise Help, Domains to allow
+    for Firefox, Telemetry section: https://support.mozilla.org/en-US/kb/domains-allow-firefox'
+  severity: info
+known_bloatware: []
+trusted_publishers:
+- id: publisher.microsoft-windows
+  match:
+    target: process
+    publisher:
+      exact: Microsoft Windows
+  reason: This signer CN is documented for Windows components. It is context only
+    and does not override other rules.
+  confidence: medium
+  platforms:
+  - windows
+  source_note: 'needs human review; Microsoft Sysinternals signing example shows the
+    Microsoft Windows signer CN: https://download.microsoft.com/download/a/f/a/afab0aee-5bcb-445d-9e1a-a45214fa4e5f/9780735656727_samplechapters.pdf'
+- id: publisher.systemd-package
+  match:
+    target: process
+    publisher:
+      exact: systemd
+  reason: The owning package name is systemd. This is provenance context, not a code-signing
+    guarantee.
+  confidence: medium
+  platforms:
+  - linux
+  source_note: 'needs human review; Debian publishes the systemd package for the system
+    and service manager: https://packages.debian.org/stable/systemd'
+core_os_allowlist:
+- id: core.macos.launchd
+  match:
+    target: process
+    name:
+      exact: launchd
+    path:
+      exact: /sbin/launchd
+  reason: This matches the reviewed name and expected location of a core OS component.
+    Do not treat this entry as junk.
+  confidence: high
+  platforms:
+  - macos
+  source_note: needs human review; Apple identifies launchd as its daemon manager;
+    /sbin/launchd was verified locally using codesign metadata. https://github.com/apple-oss-distributions/launchd/blob/main/man/launchd.8
+- id: core.macos.kernel-task
+  match:
+    target: process
+    name:
+      exact: kernel_task
+    path:
+      exact: ''
+  reason: This matches the reviewed name and expected location of a core OS component.
+    Do not treat this entry as junk.
+  confidence: high
+  platforms:
+  - macos
+  source_note: needs human review; Apple identifies kernel_task as a system process.
+    An empty executable is the limited kernel-context representation in this schema;
+    name alone is not identity proof. https://support.apple.com/en-us/102172
+- id: core.linux.systemd-usr
+  match:
+    target: process
+    name:
+      exact: systemd
+    path:
+      exact: /usr/lib/systemd/systemd
+  reason: This matches the reviewed name and expected location of a core OS component.
+    Do not treat this entry as junk.
+  confidence: high
+  platforms:
+  - linux
+  source_note: needs human review; Upstream systemd manual gives this executable path.
+    https://www.freedesktop.org/software/systemd/man/251/init.html
+- id: core.linux.systemd-lib
+  match:
+    target: process
+    name:
+      exact: systemd
+    path:
+      exact: /lib/systemd/systemd
+  reason: This matches the reviewed name and expected location of a core OS component.
+    Do not treat this entry as junk.
+  confidence: high
+  platforms:
+  - linux
+  source_note: needs human review; The systemd path also occurs under /lib in non-merged
+    layouts; Debian bookworm package file list documents this variant. https://packages.debian.org/bookworm/amd64/systemd/filelist
+- id: core.linux.init
+  match:
+    target: process
+    name:
+      exact: init
+    path:
+      exact: /sbin/init
+  reason: This matches the reviewed name and expected location of a core OS component.
+    Do not treat this entry as junk.
+  confidence: high
+  platforms:
+  - linux
+  source_note: needs human review; Upstream systemd manual documents /sbin/init as
+    its boot entry point. https://www.freedesktop.org/software/systemd/man/251/init.html
+- id: core.windows.system
+  match:
+    target: process
+    name:
+      exact: System
+    path:
+      exact: ''
+  reason: This matches the reviewed name and expected location of a core OS component.
+    Do not treat this entry as junk.
+  confidence: high
+  platforms:
+  - windows
+  source_note: needs human review; Microsoft lists System as a critical system service.
+    Empty path represents kernel context or unavailable executable metadata, not verified
+    identity. https://learn.microsoft.com/en-us/windows/win32/rstmgr/critical-system-services
+- id: core.windows.svchost-system32
+  match:
+    target: process
+    name:
+      exact: svchost.exe
+    path:
+      glob: ?:/Windows/System32/svchost.exe
+  reason: This matches the reviewed name and expected location of a core OS component.
+    Do not treat this entry as junk.
+  confidence: high
+  platforms:
+  - windows
+  source_note: needs human review; Microsoft documents the system service host under
+    system32 or SysWOW64. Standard Windows installation location policy. https://azure.microsoft.com/en-us/blog/ways-to-use-azure-security-center-log-analytics-for-threat-hunting/
+- id: core.windows.svchost-wow64
+  match:
+    target: process
+    name:
+      exact: svchost.exe
+    path:
+      glob: ?:/Windows/SysWOW64/svchost.exe
+  reason: This matches the reviewed name and expected location of a core OS component.
+    Do not treat this entry as junk.
+  confidence: high
+  platforms:
+  - windows
+  source_note: needs human review; Microsoft documents the system service host under
+    system32 or SysWOW64. Standard Windows installation location policy. https://azure.microsoft.com/en-us/blog/ways-to-use-azure-security-center-log-analytics-for-threat-hunting/
+- id: core.windows.csrss
+  match:
+    target: process
+    name:
+      exact: csrss.exe
+    path:
+      glob: ?:/Windows/System32/csrss.exe
+  reason: This matches the reviewed name and expected location of a core OS component.
+    Do not treat this entry as junk.
+  confidence: high
+  platforms:
+  - windows
+  source_note: needs human review; Microsoft protocol exclusion-list example gives
+    %windir%/system32/csrss.exe. Standard Windows installation location policy. https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wsrm/7f4ee0ea-be67-4cca-a44c-ad6bfc7da803
+- id: core.windows.explorer
+  match:
+    target: process
+    name:
+      exact: explorer.exe
+    path:
+      glob: ?:/Windows/explorer.exe
+  reason: This matches the reviewed name and expected location of a core OS component.
+    Do not treat this entry as junk.
+  confidence: high
+  platforms:
+  - windows
+  source_note: needs human review; Microsoft Sysinternals reference sample uses c:/windows/explorer.exe.
+    Standard Windows installation location policy. https://download.microsoft.com/download/a/f/a/afab0aee-5bcb-445d-9e1a-a45214fa4e5f/9780735656727_samplechapters.pdf
+ignore_list: []

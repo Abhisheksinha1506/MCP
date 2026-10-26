@@ -1,0 +1,50 @@
+{
+  "os": "windows",
+  "hostname": "fixture-machine",
+  "privilege_level": "standard",
+  "processes": [
+    {
+      "name": "System",
+      "exe_path": "",
+      "trust_signal": "unknown"
+    },
+    {
+      "name": "svchost.exe",
+      "exe_path": "C:\\Windows\\System32\\svchost.exe",
+      "trust_signal": "unknown"
+    },
+    {
+      "name": "csrss.exe",
+      "exe_path": "C:\\Windows\\System32\\csrss.exe",
+      "trust_signal": "unknown"
+    },
+    {
+      "name": "explorer.exe",
+      "exe_path": "C:\\Windows\\explorer.exe",
+      "trust_signal": "unknown"
+    },
+    {
+      "name": "Firefox",
+      "exe_path": "C:\\Program Files\\Mozilla Firefox\\firefox.exe",
+      "trust_signal": "verified"
+    },
+    {
+      "name": "Example Dev Tool",
+      "exe_path": "~/bin/devtool",
+      "trust_signal": "unsigned"
+    }
+  ],
+  "connections": [
+    {
+      "process_name": "Firefox",
+      "remote_host": "192.0.2.1",
+      "remote_port": 443,
+      "protocol": "tcp",
+      "resolved_domain": "incoming.telemetry.mozilla.org"
+    }
+  ],
+  "startup_items": [],
+  "visibility_notes": [
+    "Some protected process metadata is unavailable."
+  ]
+}
