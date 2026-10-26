@@ -47,7 +47,6 @@ def result_data(result):
 def test_all_tools_resources_annotations_privacy_and_stdout(tmp_path, capfd, monkeypatch):
     def no_network(*args, **kwargs):
         raise AssertionError('Network calls are forbidden')
-    monkeypatch.setattr(socket.socket, 'connect', no_network)
     async def scenario(platform):
         snap = fixture_snapshot(platform)
         active_rules = yaml.safe_load((Path(__file__).parent.parent / 'data/rules.yaml').read_text())
@@ -109,7 +108,12 @@ def test_all_tools_resources_annotations_privacy_and_stdout(tmp_path, capfd, mon
                 response_without_data = {k: v for k, v in response.items() if k != 'untrusted_data'}
                 assert INJECTION not in json.dumps(response_without_data)
     for platform in ('macos', 'linux', 'windows'):
-        asyncio.run(scenario(platform))
+        # Windows creates a loopback socket pair while constructing its event loop.
+        # Guard tool execution after that stdlib initialization, on every platform.
+        with asyncio.Runner() as runner:
+            with monkeypatch.context() as network_guard:
+                network_guard.setattr(socket.socket, 'connect', no_network)
+                runner.run(scenario(platform))
     assert capfd.readouterr().out == ''
 
 
