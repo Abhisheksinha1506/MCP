@@ -27,4 +27,4 @@ markers = [
 ]
 
 [tool.setuptools.data-files]
-"share/dialtone-watcher" = ["data/rules.yaml"]
+"share/dialtone-watcher" = ["data/rules.yaml", "data/knowledge.yaml"]

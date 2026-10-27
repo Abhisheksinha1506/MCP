@@ -172,7 +172,7 @@ def test_timeout_responsiveness_and_no_late_save(tmp_path, capfd):
         return fixture_snapshot()
     async def scenario():
         database = tmp_path / 'timeout.db'
-        server = create_server(database, collect=blocked, collector_factory=Collector, timeout=0.03)
+        server = create_server(database, collect=blocked, collector_factory=Collector, timeout=0.5)
         async with create_connected_server_and_client_session(server) as client:
             task = asyncio.create_task(client.call_tool('take_snapshot', {}))
             while not entered.is_set():

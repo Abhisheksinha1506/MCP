@@ -1,0 +1,624 @@
+# Offline context only; needs human review before relying on it.
+entries:
+- id: macos.launchd
+  names:
+  - launchd
+  platforms:
+  - macos
+  description: Commonly part of macOS service management, starting and supervising
+    agents and daemons.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://support.apple.com/guide/terminal/apdc6c1077b-5d5d-4d35-9c19-60f2397b2369/mac;
+    executable /sbin/launchd verified locally.'
+  last_reviewed: '2026-10-27'
+  expected_locations:
+  - /sbin/launchd
+- id: macos.kernel-task
+  names:
+  - kernel_task
+  platforms:
+  - macos
+  description: Commonly part of macOS kernel activity; Apple documents CPU temperature
+    management as one of its functions.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://support.apple.com/en-us/102172'
+  last_reviewed: '2026-10-27'
+- id: macos.finder
+  names:
+  - Finder
+  platforms:
+  - macos
+  description: Commonly part of the macOS desktop, used to browse and organize files
+    and folders.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://support.apple.com/guide/mac-help/mchlp2605/mac;
+    standard executable location verified locally.'
+  last_reviewed: '2026-10-27'
+  expected_locations:
+  - /System/Library/CoreServices/Finder.app/Contents/MacOS/Finder
+- id: macos.dock
+  names:
+  - Dock
+  platforms:
+  - macos
+  description: Commonly part of the macOS desktop interface for opening apps and accessing
+    minimized windows.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://support.apple.com/guide/mac-help/mh35859/mac;
+    standard executable location verified locally.'
+  last_reviewed: '2026-10-27'
+  expected_locations:
+  - /System/Library/CoreServices/Dock.app/Contents/MacOS/Dock
+- id: macos.mds
+  names:
+  - mds
+  platforms:
+  - macos
+  description: Commonly part of macOS metadata services, serving clients such as Spotlight.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS installed manual: Apple-supplied mds(8), /usr/share/man/man8/mds.8;
+    metadata-server DESCRIPTION; executable location verified locally.'
+  last_reviewed: '2026-10-27'
+  expected_locations:
+  - /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+- id: macos.mdworker
+  names:
+  - mdworker
+  platforms:
+  - macos
+  description: Commonly part of macOS metadata indexing, scanning files for the metadata
+    server when volumes or files change.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS installed manual: Apple-supplied mdworker(8),
+    /usr/share/man/man8/mdworker.8, DESCRIPTION.'
+  last_reviewed: '2026-10-27'
+- id: windows.csrss
+  names:
+  - csrss.exe
+  platforms:
+  - windows
+  description: Commonly part of the Windows user-mode subsystem supporting interactive
+    sessions.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://www-stg.microsoftpressstore.com/articles/article.aspx?p=2201310;
+    Windows Internals, Boot Process table and initialization discussion.'
+  last_reviewed: '2026-10-27'
+  expected_locations:
+  - ?:/Windows/System32/csrss.exe
+- id: windows.services
+  names:
+  - services.exe
+  platforms:
+  - windows
+  description: Commonly part of Windows service management, starting and managing
+    services.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://www-stg.microsoftpressstore.com/articles/article.aspx?p=2201310;
+    Windows Internals, Boot Process table and initialization discussion.'
+  last_reviewed: '2026-10-27'
+  expected_locations:
+  - ?:/Windows/System32/services.exe
+- id: windows.wininit
+  names:
+  - wininit.exe
+  platforms:
+  - windows
+  description: Commonly part of Windows startup, launching service-management and
+    authentication components.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://www-stg.microsoftpressstore.com/articles/article.aspx?p=2201310;
+    Windows Internals, Boot Process table and initialization discussion.'
+  last_reviewed: '2026-10-27'
+  expected_locations:
+  - ?:/Windows/System32/wininit.exe
+- id: windows.winlogon
+  names:
+  - winlogon.exe
+  platforms:
+  - windows
+  description: Commonly part of Windows interactive logon and session management.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://www-stg.microsoftpressstore.com/articles/article.aspx?p=2201310;
+    Windows Internals, Boot Process table and initialization discussion.'
+  last_reviewed: '2026-10-27'
+  expected_locations:
+  - ?:/Windows/System32/winlogon.exe
+- id: windows.lsass
+  names:
+  - lsass.exe
+  platforms:
+  - windows
+  description: Commonly part of Windows authentication and local security policy enforcement.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://www-stg.microsoftpressstore.com/articles/article.aspx?p=2201310;
+    Windows Internals, Boot Process table and initialization discussion.'
+  last_reviewed: '2026-10-27'
+  expected_locations:
+  - ?:/Windows/System32/lsass.exe
+- id: windows.smss
+  names:
+  - smss.exe
+  platforms:
+  - windows
+  description: Commonly part of Windows startup, initializing sessions and starting
+    session components.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://www-stg.microsoftpressstore.com/articles/article.aspx?p=2201310;
+    Windows Internals, Boot Process table and initialization discussion.'
+  last_reviewed: '2026-10-27'
+  expected_locations:
+  - ?:/Windows/System32/smss.exe
+- id: windows.svchost
+  names:
+  - svchost.exe
+  platforms:
+  - windows
+  description: Commonly part of Windows, hosting operating-system services in shared
+    service processes.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://learn.microsoft.com/en-us/windows/win32/services/service-programs;
+    locations: https://azure.microsoft.com/en-us/blog/ways-to-use-azure-security-center-log-analytics-for-threat-hunting/'
+  last_reviewed: '2026-10-27'
+  expected_locations:
+  - ?:/Windows/System32/svchost.exe
+  - ?:/Windows/SysWOW64/svchost.exe
+- id: windows.system
+  names:
+  - System
+  platforms:
+  - windows
+  description: Usually expected on Windows as a core system process; a name alone
+    does not establish its identity.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://learn.microsoft.com/en-us/windows/win32/rstmgr/critical-system-services;
+    System is listed as a critical system process.'
+  last_reviewed: '2026-10-27'
+- id: windows.explorer
+  names:
+  - explorer.exe
+  platforms:
+  - windows
+  description: Commonly part of the Windows desktop shell and File Explorer interface.
+  publisher: Microsoft Windows
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: Microsoft Sysinternals reference
+    sample, explorer.exe path and Microsoft Windows signer: https://download.microsoft.com/download/a/f/a/afab0aee-5bcb-445d-9e1a-a45214fa4e5f/9780735656727_samplechapters.pdf'
+  last_reviewed: '2026-10-27'
+  expected_locations:
+  - ?:/Windows/explorer.exe
+- id: windows.defender
+  names:
+  - MsMpEng.exe
+  platforms:
+  - windows
+  description: Commonly part of Microsoft Defender Antivirus, providing its scanning
+    service.
+  publisher: null
+  category: security
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://learn.microsoft.com/en-us/defender-endpoint/microsoft-defender-antivirus-windows;
+    processes and services table.'
+  last_reviewed: '2026-10-27'
+- id: windows.onedrive
+  names:
+  - OneDrive.exe
+  platforms:
+  - windows
+  description: Commonly part of Microsoft OneDrive, synchronizing selected files between
+    a device and cloud storage.
+  publisher: null
+  category: cloud_sync
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://learn.microsoft.com/en-us/sharepoint/sync-client-update-process;
+    https://learn.microsoft.com/en-us/sharepoint/sync-process'
+  last_reviewed: '2026-10-27'
+- id: linux.systemd
+  names:
+  - systemd
+  platforms:
+  - linux
+  description: Commonly part of Linux installations using systemd, managing system
+    services or a user session.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://www.freedesktop.org/software/systemd/man/latest/systemd.html'
+  last_reviewed: '2026-10-27'
+  expected_locations:
+  - /usr/lib/systemd/systemd
+  - /lib/systemd/systemd
+- id: linux.init
+  names:
+  - init
+  platforms:
+  - linux
+  description: Usually expected as the name of a Linux initialization process; the
+    implementation varies between distributions.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://www.freedesktop.org/software/systemd/man/latest/systemd.html;
+    documents the init entry point for systemd; this name is also used by other init
+    implementations.'
+  last_reviewed: '2026-10-27'
+- id: linux.systemd-journald
+  names:
+  - systemd-journald
+  platforms:
+  - linux
+  description: Commonly part of systemd-based Linux installations, collecting and
+    storing system logging data.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://www.freedesktop.org/software/systemd/man/latest/systemd-journald.service.html'
+  last_reviewed: '2026-10-27'
+  expected_locations:
+  - /usr/lib/systemd/systemd-journald
+  - /lib/systemd/systemd-journald
+- id: linux.systemd-logind
+  names:
+  - systemd-logind
+  platforms:
+  - linux
+  description: Commonly part of systemd-based Linux installations, managing user logins
+    and sessions.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://www.freedesktop.org/software/systemd/man/latest/systemd-logind.service.html'
+  last_reviewed: '2026-10-27'
+  expected_locations:
+  - /usr/lib/systemd/systemd-logind
+  - /lib/systemd/systemd-logind
+- id: linux.systemd-udevd
+  names:
+  - systemd-udevd
+  platforms:
+  - linux
+  description: Commonly part of systemd-based Linux installations, handling device
+    events and applying device-management rules.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://www.freedesktop.org/software/systemd/man/latest/systemd-udevd.service.html'
+  last_reviewed: '2026-10-27'
+  expected_locations:
+  - /usr/lib/systemd/systemd-udevd
+  - /lib/systemd/systemd-udevd
+- id: linux.systemd-resolved
+  names:
+  - systemd-resolved
+  platforms:
+  - linux
+  description: Commonly part of systemd-based Linux installations, providing local
+    name-resolution services to applications.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://www.freedesktop.org/software/systemd/man/latest/systemd-resolved.service.html'
+  last_reviewed: '2026-10-27'
+  expected_locations:
+  - /usr/lib/systemd/systemd-resolved
+  - /lib/systemd/systemd-resolved
+- id: linux.systemd-timesyncd
+  names:
+  - systemd-timesyncd
+  platforms:
+  - linux
+  description: Commonly part of systemd-based Linux installations, synchronizing the
+    system clock with network time servers.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://www.freedesktop.org/software/systemd/man/latest/systemd-timesyncd.service.html'
+  last_reviewed: '2026-10-27'
+  expected_locations:
+  - /usr/lib/systemd/systemd-timesyncd
+  - /lib/systemd/systemd-timesyncd
+- id: linux.dbus
+  names:
+  - dbus-daemon
+  platforms:
+  - linux
+  description: Commonly part of Linux desktop or system services, relaying messages
+    between applications on a D-Bus message bus.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://dbus.freedesktop.org/doc/dbus-daemon.1.html'
+  last_reviewed: '2026-10-27'
+- id: linux.sshd
+  names:
+  - sshd
+  platforms:
+  - linux
+  description: Commonly part of an OpenSSH server installation, accepting authenticated
+    remote SSH connections.
+  publisher: null
+  category: other
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; Upstream manual: https://man.openbsd.org/sshd'
+  last_reviewed: '2026-10-27'
+- id: linux.networkmanager
+  names:
+  - NetworkManager
+  platforms:
+  - linux
+  description: Commonly part of Linux networking, managing network interfaces and
+    connection configuration.
+  publisher: null
+  category: os_core
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; OS documentation: https://networkmanager.dev/docs/api/latest/NetworkManager.html'
+  last_reviewed: '2026-10-27'
+- id: linux.dockerd
+  names:
+  - dockerd
+  platforms:
+  - linux
+  description: Commonly part of Docker installations, running the daemon that manages
+    containers.
+  publisher: null
+  category: developer_tool
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; Vendor documentation: https://docs.docker.com/reference/cli/dockerd/'
+  last_reviewed: '2026-10-27'
+- id: linux.containerd
+  names:
+  - containerd
+  platforms:
+  - linux
+  description: Commonly part of container platforms, managing container execution
+    and related runtime resources.
+  publisher: null
+  category: developer_tool
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; Upstream documentation: https://containerd.io/'
+  last_reviewed: '2026-10-27'
+- id: common.python
+  names:
+  - python
+  - python3
+  - python.exe
+  - python3.exe
+  platforms:
+  - macos
+  - windows
+  - linux
+  description: Commonly part of a Python interpreter executing scripts or application
+    code.
+  publisher: null
+  category: developer_tool
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; Upstream documentation: https://docs.python.org/3/using/cmdline.html'
+  last_reviewed: '2026-10-27'
+- id: common.node
+  names:
+  - node
+  - node.exe
+  platforms:
+  - macos
+  - windows
+  - linux
+  description: Commonly part of the Node.js runtime executing JavaScript outside a
+    web browser.
+  publisher: null
+  category: developer_tool
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; Upstream documentation: https://nodejs.org/en/about'
+  last_reviewed: '2026-10-27'
+- id: common.git
+  names:
+  - git
+  - git.exe
+  platforms:
+  - macos
+  - windows
+  - linux
+  description: Commonly part of Git version-control operations on source repositories.
+  publisher: null
+  category: developer_tool
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; Upstream documentation: https://git-scm.com/docs/git'
+  last_reviewed: '2026-10-27'
+- id: common.vscode
+  names:
+  - Code
+  - code
+  - Code.exe
+  platforms:
+  - macos
+  - windows
+  - linux
+  description: Commonly part of Visual Studio Code editing or development workflows.
+  publisher: null
+  category: developer_tool
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; Upstream documentation: https://code.visualstudio.com/docs/configure/command-line'
+  last_reviewed: '2026-10-27'
+- id: common.firefox
+  names:
+  - firefox
+  - firefox.exe
+  platforms:
+  - macos
+  - windows
+  - linux
+  description: Commonly part of the Firefox web browser and its desktop browsing interface.
+  publisher: null
+  category: browser
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; Upstream documentation: https://firefox-source-docs.mozilla.org/browser/index.html'
+  last_reviewed: '2026-10-27'
+- id: common.chrome
+  names:
+  - chrome
+  - chrome.exe
+  - Google Chrome
+  platforms:
+  - macos
+  - windows
+  - linux
+  description: Commonly part of a Chromium-based browser using separate processes
+    for browser work.
+  publisher: null
+  category: browser
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; Upstream documentation: https://www.chromium.org/developers/design-documents/multi-process-architecture/'
+  last_reviewed: '2026-10-27'
+- id: common.java
+  names:
+  - java
+  - java.exe
+  - javaw.exe
+  platforms:
+  - macos
+  - windows
+  - linux
+  description: Commonly part of a Java runtime launching an application.
+  publisher: null
+  category: developer_tool
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; Upstream documentation: https://docs.oracle.com/en/java/javase/21/docs/specs/man/java.html'
+  last_reviewed: '2026-10-27'
+- id: common.go
+  names:
+  - go
+  - go.exe
+  platforms:
+  - macos
+  - windows
+  - linux
+  description: Commonly part of the Go toolchain building or managing Go programs.
+  publisher: null
+  category: developer_tool
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; Upstream documentation: https://go.dev/cmd/go/'
+  last_reviewed: '2026-10-27'
+- id: common.rustc
+  names:
+  - rustc
+  - rustc.exe
+  platforms:
+  - macos
+  - windows
+  - linux
+  description: Commonly part of the Rust compiler translating source code into compiled
+    output.
+  publisher: null
+  category: developer_tool
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; Upstream documentation: https://doc.rust-lang.org/rustc/what-is-rustc.html'
+  last_reviewed: '2026-10-27'
+- id: common.cargo
+  names:
+  - cargo
+  - cargo.exe
+  platforms:
+  - macos
+  - windows
+  - linux
+  description: Commonly part of Rust development workflows such as dependency management
+    and building packages.
+  publisher: null
+  category: developer_tool
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; Upstream documentation: https://doc.rust-lang.org/cargo/'
+  last_reviewed: '2026-10-27'
+- id: common.cmake
+  names:
+  - cmake
+  - cmake.exe
+  platforms:
+  - macos
+  - windows
+  - linux
+  description: Commonly part of CMake build-configuration and build-management workflows.
+  publisher: null
+  category: developer_tool
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; Upstream documentation: https://cmake.org/cmake/help/latest/manual/cmake.1.html'
+  last_reviewed: '2026-10-27'
+- id: windows.onedrive-setup
+  names:
+  - OneDriveSetup.exe
+  platforms:
+  - windows
+  description: Commonly part of Microsoft OneDrive installation and update workflows.
+  publisher: null
+  category: updater
+  usually_safe_to_ignore: depends
+  confidence: high
+  source_note: 'needs human review; Vendor documentation: https://learn.microsoft.com/en-us/sharepoint/sync-client-update-process;
+    documents OneDriveSetup.exe for deploying updates.'
+  last_reviewed: '2026-10-27'
