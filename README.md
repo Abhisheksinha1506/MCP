@@ -816,3 +816,11 @@ with their recorded facts. The synthetic example added only a record in a
 temporary append-only database; no executable or startup item was created.
 Signature and process visibility limitations remained visible in the responses.
 The full five-response JSON report was kept locally and was not committed.
+
+CI exposed a pre-existing 30-millisecond deadline in the milestone 6 retry
+test that could expire during normal Windows scheduling. This milestone
+increases that test-only allowance to half a second; the blocked worker still
+exceeds the deadline, and responsiveness, no-late-save, busy-state and recovery
+assertions are retained. No snapshot timeout or other tool implementation
+changes. The new provenance test also explicitly reads the README as UTF-8
+on Windows.
