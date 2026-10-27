@@ -1,0 +1,4 @@
+include LICENSE README.md SECURITY.md CHANGELOG.md pyproject.toml
+include data/rules.yaml data/knowledge.yaml
+include scripts/check_release.py scripts/smoke_wheel.py scripts/document_schema.py
+recursive-include tests *

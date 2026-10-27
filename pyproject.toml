@@ -1,13 +1,35 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "dialtone-watcher"
 version = "0.1.0"
-description = "Offline, advice-only machine activity inspection through MCP"
+description = "Local, offline, advice-only process and network inspection over MCP stdio"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "Dialtone Watcher contributors"}]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Topic :: System :: Monitoring",
+]
 requires-python = ">=3.11"
 dependencies = ["mcp>=1.30,<2", "psutil", "PyYAML"]
+
+[project.urls]
+Repository = "https://github.com/Abhisheksinha1506/MCP"
+Issues = "https://github.com/Abhisheksinha1506/MCP/issues"
+Changelog = "https://github.com/Abhisheksinha1506/MCP/blob/main/CHANGELOG.md"
+Security = "https://github.com/Abhisheksinha1506/MCP/blob/main/SECURITY.md"
 
 [project.scripts]
 dialtone-watcher = "dialtone_watcher.server:main"
