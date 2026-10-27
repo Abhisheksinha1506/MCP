@@ -53,3 +53,23 @@ jobs:
           docker build -t dialtone-watcher-test:arch -f scripts/docker/arch.Dockerfile .
       - name: Run Linux integration tests with networking disabled
         run: scripts/test_linux_docker.sh
+
+  wheel-install:
+    name: Wheel install (${{ matrix.os }}, Python ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          clean: false
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Build wheel and sdist; install and exercise outside checkout
+        run: python scripts/check_release.py --output-dir dist
