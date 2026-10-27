@@ -1,8 +1,8 @@
 # Dialtone Watcher
 
-An offline, advice-only local MCP server under development. Milestones 1–6 provide
+An offline, advice-only local MCP server under development. Milestones 1–7 provide
 the metadata schema, redaction, SQLite storage, collectors for macOS, Linux
-and Windows, a local rules/findings engine, and a stdio MCP server.
+and Windows, a local rules/findings engine, a stdio MCP server, and sourced process context.
 
 Requires Python 3.11+. From this folder:
 
@@ -624,7 +624,7 @@ not a complete assessment.
 | `list_unusual_destinations(snapshot_id, limit=50)` | Connections matching explicit possible-telemetry rules or associated by process name with unusual findings; includes attribution caveats and assessment gaps. Unknown domains alone are not suspicious. |
 | `list_startup_items(snapshot_id, limit=100)` | Recorded startup entries with source and enabled/unknown status, plus visibility notes. |
 | `suggest_removals(snapshot_id)` | Up to 50 severity-ranked reversible review suggestions, reasons and caveats. Nothing is removed or disabled. |
-| `explain_process(name, snapshot_id=None)` | Exact-name snapshot facts: publisher, trust, rule matches, connections and startup associations. Defaults to the latest snapshot; absent processes are explicitly unknown. No knowledge table or invented description. |
+| `explain_process(name, snapshot_id=None)` | Exact-name snapshot facts: publisher, trust, rule matches, connections and startup associations. Defaults to the latest snapshot; absent processes are explicitly unknown. Adds sourced knowledge context with publisher/location consistency checks; no identity guarantee. |
 | `compare_to_peers(snapshot_id)` | `status: not_available`, `reason: peer dataset not enabled`. No remote service. |
 | `check_permissions()` | Current privilege status, known collector coverage limits and OS-specific access guidance. Per-process failures are measured during collection. |
 
@@ -694,3 +694,125 @@ and called `take_snapshot` followed by `list_findings` on this Mac. Counts:
 No findings is not a safety verdict. Collection required host process visibility;
 the desktop execution sandbox hides all processes and cannot satisfy the
 existing real-macOS integration test.
+
+## Sourced process context (milestone 7)
+
+The knowledge table is **needs human review before relying on it**. Its 41
+entries describe documented purposes across macOS, Windows and Linux, using
+vendor/upstream documentation, OS manuals and Microsoft Press OS internals
+documentation. All starter entries have high confidence in the documented
+purpose, not in the identity or behavior of any observed executable. Sources
+were checked during development on 2026-10-27. No pages or descriptions are
+fetched at runtime. macOS mds/mdworker entries cite Apple-supplied installed
+manuals, which can be reviewed with `man mds` and `man mdworker`.
+
+`data/knowledge.yaml` is installed with the package. Each entry requires id,
+names, platforms, description, publisher (nullable), category,
+usually_safe_to_ignore, confidence, source_note and an ISO last_reviewed date.
+Optional expected_locations are whole-path glob patterns using the shared
+path normalization. A null publisher means no exact signer-CN expectation is
+asserted; the vendor brand alone is insufficient to guess a signing identity.
+Unknown fields, missing fields, duplicate IDs, ambiguous same-platform names,
+invalid dates/categories and restricted description wording are rejected.
+Security-tool descriptions may use the restricted security vocabulary; no
+description may give a safe verdict.
+
+`explain_process` preserves its previous snapshot and rule facts and adds:
+
+- `observed`: process publisher, trust signal, path and other recorded process
+  metadata, connections, startup items and startup status. `not_observed` startup
+  status does not mean disabled; visibility may be limited.
+- `rule_matches`: local rules matched by the process and its associated metadata.
+- `known_info`: sourced context and review date, or null when no entry matches.
+- `consistency`: `matches`, `mismatch`, or `not_checkable`, with per-instance
+  `consistency_details`. A conflict wins across instances. Missing expected
+  evidence makes the comparison incomplete; unknown trust remains neutral.
+- `caveats`: human-review guidance, attribution limits, visibility notes and
+  assessment gaps. Lower-confidence entries explicitly say they are below high.
+
+A location or publisher mismatch withholds the generic description and resets
+usual-ignore guidance to `depends`; it never turns a name match into an identity
+claim. Consistency compares recorded strings, not certificate authenticity.
+Matching locations can still contain substituted executables. Entries without
+a documented location or signer expectation are explicitly not checkable.
+Knowledge matches can describe a name absent from a snapshot, but no observed
+identity is inferred. A process with neither knowledge nor rule matches returns
+`no information available`, its observed facts, and a suggestion to consult the
+vendor or check its signature/package ownership.
+
+Names match exactly, with case ignored on macOS/Windows and preserved on Linux.
+Appending an instruction to a familiar name never creates a fuzzy match. Machine
+text and table text remain inside the existing untrusted-data envelope and pass
+through the existing redaction, control stripping and output budget. Detailed
+collections in this enriched response return up to five items (ten caveats),
+with total counts/truncation flags; mismatches are prioritized in consistency
+details. Legacy fact fields remain for existing clients. No findings, severity,
+collector, peer-comparison or other tool behavior changes. Knowledge loads
+locally when explain_process is called, so a table edit is validated on the next
+call without changing the active rules resource.
+
+### Entry source manifest
+
+Every row is **needs human review before relying on it**. The source_note in
+each YAML entry records the same provenance and any local location verification.
+
+| Entry ID | Source type and provenance |
+| --- | --- |
+| macos.launchd | OS documentation: https://support.apple.com/guide/terminal/apdc6c1077b-5d5d-4d35-9c19-60f2397b2369/mac; executable /sbin/launchd verified locally. |
+| macos.kernel-task | OS documentation: https://support.apple.com/en-us/102172 |
+| macos.finder | OS documentation: https://support.apple.com/guide/mac-help/mchlp2605/mac; standard executable location verified locally. |
+| macos.dock | OS documentation: https://support.apple.com/guide/mac-help/mh35859/mac; standard executable location verified locally. |
+| macos.mds | OS installed manual: Apple-supplied mds(8), /usr/share/man/man8/mds.8; metadata-server DESCRIPTION; executable location verified locally. |
+| macos.mdworker | OS installed manual: Apple-supplied mdworker(8), /usr/share/man/man8/mdworker.8, DESCRIPTION. |
+| windows.csrss | OS documentation: https://www-stg.microsoftpressstore.com/articles/article.aspx?p=2201310; Windows Internals, Boot Process table and initialization discussion. |
+| windows.services | OS documentation: https://www-stg.microsoftpressstore.com/articles/article.aspx?p=2201310; Windows Internals, Boot Process table and initialization discussion. |
+| windows.wininit | OS documentation: https://www-stg.microsoftpressstore.com/articles/article.aspx?p=2201310; Windows Internals, Boot Process table and initialization discussion. |
+| windows.winlogon | OS documentation: https://www-stg.microsoftpressstore.com/articles/article.aspx?p=2201310; Windows Internals, Boot Process table and initialization discussion. |
+| windows.lsass | OS documentation: https://www-stg.microsoftpressstore.com/articles/article.aspx?p=2201310; Windows Internals, Boot Process table and initialization discussion. |
+| windows.smss | OS documentation: https://www-stg.microsoftpressstore.com/articles/article.aspx?p=2201310; Windows Internals, Boot Process table and initialization discussion. |
+| windows.svchost | OS documentation: https://learn.microsoft.com/en-us/windows/win32/services/service-programs; locations: https://azure.microsoft.com/en-us/blog/ways-to-use-azure-security-center-log-analytics-for-threat-hunting/ |
+| windows.system | OS documentation: https://learn.microsoft.com/en-us/windows/win32/rstmgr/critical-system-services; System is listed as a critical system process. |
+| windows.explorer | OS documentation: Microsoft Sysinternals reference sample, explorer.exe path and Microsoft Windows signer: https://download.microsoft.com/download/a/f/a/afab0aee-5bcb-445d-9e1a-a45214fa4e5f/9780735656727_samplechapters.pdf |
+| windows.defender | OS documentation: https://learn.microsoft.com/en-us/defender-endpoint/microsoft-defender-antivirus-windows; processes and services table. |
+| windows.onedrive | OS documentation: https://learn.microsoft.com/en-us/sharepoint/sync-client-update-process; https://learn.microsoft.com/en-us/sharepoint/sync-process |
+| linux.systemd | OS documentation: https://www.freedesktop.org/software/systemd/man/latest/systemd.html |
+| linux.init | OS documentation: https://www.freedesktop.org/software/systemd/man/latest/systemd.html; documents the init entry point for systemd; this name is also used by other init implementations. |
+| linux.systemd-journald | OS documentation: https://www.freedesktop.org/software/systemd/man/latest/systemd-journald.service.html |
+| linux.systemd-logind | OS documentation: https://www.freedesktop.org/software/systemd/man/latest/systemd-logind.service.html |
+| linux.systemd-udevd | OS documentation: https://www.freedesktop.org/software/systemd/man/latest/systemd-udevd.service.html |
+| linux.systemd-resolved | OS documentation: https://www.freedesktop.org/software/systemd/man/latest/systemd-resolved.service.html |
+| linux.systemd-timesyncd | OS documentation: https://www.freedesktop.org/software/systemd/man/latest/systemd-timesyncd.service.html |
+| linux.dbus | OS documentation: https://dbus.freedesktop.org/doc/dbus-daemon.1.html |
+| linux.sshd | Upstream manual: https://man.openbsd.org/sshd |
+| linux.networkmanager | OS documentation: https://networkmanager.dev/docs/api/latest/NetworkManager.html |
+| linux.dockerd | Vendor documentation: https://docs.docker.com/reference/cli/dockerd/ |
+| linux.containerd | Upstream documentation: https://containerd.io/ |
+| common.python | Upstream documentation: https://docs.python.org/3/using/cmdline.html |
+| common.node | Upstream documentation: https://nodejs.org/en/about |
+| common.git | Upstream documentation: https://git-scm.com/docs/git |
+| common.vscode | Upstream documentation: https://code.visualstudio.com/docs/configure/command-line |
+| common.firefox | Upstream documentation: https://firefox-source-docs.mozilla.org/browser/index.html |
+| common.chrome | Upstream documentation: https://www.chromium.org/developers/design-documents/multi-process-architecture/ |
+| common.java | Upstream documentation: https://docs.oracle.com/en/java/javase/21/docs/specs/man/java.html |
+| common.go | Upstream documentation: https://go.dev/cmd/go/ |
+| common.rustc | Upstream documentation: https://doc.rust-lang.org/rustc/what-is-rustc.html |
+| common.cargo | Upstream documentation: https://doc.rust-lang.org/cargo/ |
+| common.cmake | Upstream documentation: https://cmake.org/cmake/help/latest/manual/cmake.1.html |
+| windows.onedrive-setup | Vendor documentation: https://learn.microsoft.com/en-us/sharepoint/sync-client-update-process; documents OneDriveSetup.exe for deploying updates. |
+
+### Milestone 7 local verification
+
+On 2026-10-27 a fresh Python 3.13 environment on this Mac passed **332 tests,
+with 2 platform skips**, without plugin flags. This local count includes the
+previously added synthetic demo test, which remains outside this milestone.
+The knowledge/server tests also preserve the milestone 6 stdout, redaction,
+injection and response-budget checks. No findings or severity logic changed.
+
+A real SDK stdio client collected a macOS snapshot and printed five redacted
+explain_process responses: launchd and Finder matched their expected locations;
+a synthetic launchd at ~/Downloads/launchd produced a mismatch with its generic
+description withheld; observed logd and smd returned no information available
+with their recorded facts. The synthetic example added only a record in a
+temporary append-only database; no executable or startup item was created.
+Signature and process visibility limitations remained visible in the responses.
+The full five-response JSON report was kept locally and was not committed.

@@ -17,6 +17,7 @@ import yaml
 
 from .findings import analyze
 from .normalizer import normalize_snapshot
+from .knowledge import load_knowledge
 from .privacy import redact
 from .rules import SEVERITIES, normalize_path, validate_rules
 from .snapshot import select_collector, take_snapshot as collect_snapshot
@@ -117,7 +118,7 @@ class SafeFastMCP(FastMCP):
 
 
 def create_server(database=None, *, collect=collect_snapshot, collector_factory=select_collector,
-                  timeout=60.0, rules_path=None):
+                  timeout=60.0, rules_path=None, knowledge_path=None):
     """Create an isolated local server; injected dependencies support OS-free tests."""
     if not math.isfinite(timeout) or timeout <= 0:
         raise ValueError('timeout must be positive and finite')
@@ -282,8 +283,9 @@ def create_server(database=None, *, collect=collect_snapshot, collector_factory=
                     'rule_id': f.rule_id, 'reason': f.reason, 'suggested_action': f.suggested_action,
                     'caveats': f.caveats} for f in report.findings], 50)}
 
-    @tool('Explain an exact process name using saved metadata and local rule matches only. '
-          'Omit snapshot_id for the latest snapshot. No general knowledge descriptions or identity guarantees.')
+    @tool('Explain an exact process name using saved facts, local rule matches and sourced offline context. '
+          'Omit snapshot_id for the latest snapshot. Compare documented location and publisher expectations; '
+          'name matches alone never establish identity.')
     async def explain_process(name: str, snapshot_id: str | None = None) -> dict:
         if not name or len(name) > 512:
             raise RequestError('name must contain 1 to 512 characters.')
@@ -306,13 +308,49 @@ def create_server(database=None, *, collect=collect_snapshot, collector_factory=
             for values in values_list:
                 matches.extend({'rule_id': r.id, 'section': r.section, 'target': target, 'reason': r.reason}
                                for r in rules.rules if r.matches(target, values, snap.os))
+        entry = load_knowledge(knowledge_path).lookup(name, snap.os)
+        checks = [{'observed': asdict(p), **entry.compare(p, snap.os)} for p in processes] if entry else []
+        consistency = ('mismatch' if any(c['consistency'] == 'mismatch' for c in checks) else
+                       'matches' if checks and all(c['consistency'] == 'matches' for c in checks) else 'not_checkable')
+        known = entry.to_dict() if entry else None
+        caveats = ['needs human review before relying on it',
+                   'A name or metadata match does not verify executable identity or requested activity.',
+                   'Connections are associated by process name; startup entries by executable path.',
+                   'usually_safe_to_ignore is editorial context, not a verdict about the observed executable.']
+        caveats.extend(snap.visibility_notes)
+        caveats.extend(g['reason'] for g in report.not_assessed)
+        if entry and entry.confidence != 'high':
+            caveats.insert(0, 'Knowledge confidence is below high: ' + entry.confidence + '.')
+        if consistency == 'mismatch':
+            known['description'] = None
+            known['description_withheld'] = True
+            known['usually_safe_to_ignore'] = 'depends'
+            message = 'Observed metadata conflicts with documented expectations; the generic description is withheld. Review the recorded location and signature.'
+        elif entry:
+            message = 'Sourced context for a process name; review it together with the observed facts.'
+            if consistency == 'not_checkable':
+                caveats.append('Expected identity cannot be fully compared using the available metadata.')
+        elif matches:
+            message = 'Local rule matches are available; no sourced purpose description is available.'
+        else:
+            message = 'no information available'
         return {'snapshot_id': snap.id, 'status': 'observed' if processes else 'not_known',
-                'message': 'Snapshot facts only; process identity is not established.' if processes else
-                           'No process with this name was observed in this snapshot. Nothing further is known.',
-                'processes': page([asdict(p) for p in processes]), 'matched_rules': page(matches),
-                'connections': page([asdict(c) for c in connections]),
-                'startup_items': page([asdict(i) for i in startup]),
-                'assessment_gaps': page(report.not_assessed), 'visibility_notes': page(snap.visibility_notes),
+                'message': message,
+                'suggestion': 'Check vendor documentation and the executable signature or package ownership.',
+                'consistency': consistency,
+                'consistency_details': page(sorted(checks, key=lambda c: {'mismatch': 0, 'not_checkable': 1, 'matches': 2}[c['consistency']]), 5),
+                'known_info': known,
+                'observed': {'processes': page([asdict(p) for p in processes], 5),
+                    'connections': page([asdict(c) for c in connections], 5),
+                    'startup_items': page([asdict(i) for i in startup], 5),
+                    'startup_status': 'observed_enabled' if any(i.enabled is True for i in startup) else
+                                      'observed_disabled_or_unknown' if startup else 'not_observed'},
+                'rule_matches': page(matches, 5), 'caveats': page(list(dict.fromkeys(caveats)), 10),
+                # Retain the milestone 6 facts for existing clients.
+                'processes': page([asdict(p) for p in processes], 5), 'matched_rules': page(matches, 5),
+                'connections': page([asdict(c) for c in connections], 5),
+                'startup_items': page([asdict(i) for i in startup], 5),
+                'assessment_gaps': page(report.not_assessed, 5), 'visibility_notes': page(snap.visibility_notes, 5),
                 'association_caveat': 'Connections are associated by process name; startup entries by executable path.'}
 
     @tool('Report that peer comparison is unavailable. No peer dataset or remote service is enabled.')
