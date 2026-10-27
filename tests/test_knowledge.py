@@ -108,7 +108,7 @@ def test_seed_provenance_and_no_verdicts():
     table = load_knowledge()
     assert 40 <= len(table.entries) <= 60
     assert {p for e in table.entries for p in e.platforms} == {'macos', 'linux', 'windows'}
-    readme = (Path(__file__).parent.parent / 'README.md').read_text()
+    readme = (Path(__file__).parent.parent / 'README.md').read_text(encoding='utf-8')
     for item in table.entries:
         assert item.confidence == 'high'
         assert not re.search(r'\bsafe\b', item.description, re.I)
