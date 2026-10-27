@@ -1,0 +1,46 @@
+{
+  "os": "macos",
+  "hostname": "clean-fixture",
+  "privilege_level": "standard",
+  "processes": [
+    {
+      "name": "Firefox",
+      "exe_path": "/Applications/Firefox",
+      "trust_signal": "unknown"
+    },
+    {
+      "name": "Code",
+      "exe_path": "/Applications/Code",
+      "trust_signal": "unknown"
+    },
+    {
+      "name": "Dropbox",
+      "exe_path": "/Applications/Dropbox",
+      "trust_signal": "unknown"
+    }
+  ],
+  "connections": [
+    {
+      "process_name": "Code",
+      "remote_host": "192.0.2.1",
+      "remote_port": 443,
+      "protocol": "tcp",
+      "resolved_domain": "rink.hockeyapp.net"
+    },
+    {
+      "process_name": "Firefox",
+      "remote_host": "192.0.2.2",
+      "remote_port": 443,
+      "protocol": "tcp",
+      "resolved_domain": "incoming.telemetry.mozilla.org"
+    },
+    {
+      "process_name": "Dropbox",
+      "remote_host": "192.0.2.3",
+      "remote_port": 443,
+      "protocol": "tcp",
+      "resolved_domain": "example.com"
+    }
+  ],
+  "startup_items": []
+}

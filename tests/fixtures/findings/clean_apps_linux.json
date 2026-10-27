@@ -1,0 +1,46 @@
+{
+  "os": "linux",
+  "hostname": "clean-fixture",
+  "privilege_level": "standard",
+  "processes": [
+    {
+      "name": "firefox",
+      "exe_path": "/usr/bin/firefox",
+      "trust_signal": "unknown"
+    },
+    {
+      "name": "code",
+      "exe_path": "/usr/bin/code",
+      "trust_signal": "unknown"
+    },
+    {
+      "name": "dropbox",
+      "exe_path": "/usr/bin/dropbox",
+      "trust_signal": "unknown"
+    }
+  ],
+  "connections": [
+    {
+      "process_name": "code",
+      "remote_host": "192.0.2.1",
+      "remote_port": 443,
+      "protocol": "tcp",
+      "resolved_domain": "rink.hockeyapp.net"
+    },
+    {
+      "process_name": "firefox",
+      "remote_host": "192.0.2.2",
+      "remote_port": 443,
+      "protocol": "tcp",
+      "resolved_domain": "incoming.telemetry.mozilla.org"
+    },
+    {
+      "process_name": "dropbox",
+      "remote_host": "192.0.2.3",
+      "remote_port": 443,
+      "protocol": "tcp",
+      "resolved_domain": "example.com"
+    }
+  ],
+  "startup_items": []
+}

@@ -1,0 +1,46 @@
+{
+  "os": "windows",
+  "hostname": "clean-fixture",
+  "privilege_level": "standard",
+  "processes": [
+    {
+      "name": "firefox.exe",
+      "exe_path": "C:/Program Files/firefox.exe",
+      "trust_signal": "unknown"
+    },
+    {
+      "name": "Code.exe",
+      "exe_path": "C:/Program Files/Code.exe",
+      "trust_signal": "unknown"
+    },
+    {
+      "name": "OneDrive.exe",
+      "exe_path": "C:/Program Files/OneDrive.exe",
+      "trust_signal": "unknown"
+    }
+  ],
+  "connections": [
+    {
+      "process_name": "Code.exe",
+      "remote_host": "192.0.2.1",
+      "remote_port": 443,
+      "protocol": "tcp",
+      "resolved_domain": "rink.hockeyapp.net"
+    },
+    {
+      "process_name": "firefox.exe",
+      "remote_host": "192.0.2.2",
+      "remote_port": 443,
+      "protocol": "tcp",
+      "resolved_domain": "incoming.telemetry.mozilla.org"
+    },
+    {
+      "process_name": "OneDrive.exe",
+      "remote_host": "192.0.2.3",
+      "remote_port": 443,
+      "protocol": "tcp",
+      "resolved_domain": "example.com"
+    }
+  ],
+  "startup_items": []
+}

@@ -62,7 +62,7 @@ def test_release_metadata_and_data_declarations():
     assert metadata['project']['version'] == '0.1.0'
     assert metadata['project']['requires-python'] == '>=3.11'
     assert metadata['project']['license'] == 'MIT'
-    assert metadata['project']['license-files'] == ['LICENSE']
+    assert metadata['project']['license-files'] == ['LICENSE', 'THIRD_PARTY_NOTICES']
     assert set(metadata['tool']['setuptools']['data-files']['share/dialtone-watcher']) == {
         'data/rules.yaml', 'data/knowledge.yaml'}
     for filename in ('LICENSE', 'SECURITY.md', 'CHANGELOG.md'):

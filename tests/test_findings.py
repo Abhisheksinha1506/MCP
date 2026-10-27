@@ -127,7 +127,7 @@ def test_lookalike_in_user_folder_is_unusual_even_with_unknown_trust():
 def test_one_core_instance_does_not_hide_same_name_other_process():
     report = analyze(snapshot('windows',processes=[Process('svchost.exe',r'C:\Windows\System32\svchost.exe'),
         Process('svchost.exe',r'C:\Users\fixtureperson\svchost.exe')],
-        connections=[Connection('svchost.exe','192.0.2.1',443,'tcp','incoming.telemetry.mozilla.org')]), load_rules())
+        connections=[Connection('svchost.exe','192.0.2.1',443,'tcp','telemetry.microsoft.com')]), load_rules())
     assert {f.type for f in report.findings} == {'unusual','telemetry'}
 
 

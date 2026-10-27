@@ -126,7 +126,7 @@ def _safe_regex(value, label):
 class Predicate:
     field: str
     operator: str
-    value: str
+    value: str | tuple[str, ...]
     sensitive: object = None
     insensitive: object = None
     windows: object = None
@@ -153,8 +153,18 @@ def _predicate(field, raw, label):
         raise RuleValidationError(f'{label}: expected exactly one match operator')
     operator, value = next(iter(raw.items()))
     allowed = {'exact', 'suffix'} if field == 'domain' else {'exact', 'glob', 'regex'}
+    if field == 'process_name':
+        allowed = {'exact', 'one_of'}
     if operator not in allowed:
         raise RuleValidationError(f'{label}: unsupported match operator')
+    if field == 'process_name' and operator == 'one_of':
+        if not isinstance(value, list) or not 1 <= len(value) <= 16:
+            raise RuleValidationError(f'{label}: one_of requires 1–16 exact process names')
+        for name in value:
+            _text(name, label, maximum=MAX_PATTERN)
+        expression = '(?:' + '|'.join(re.escape(name) for name in value) + ')'
+        return Predicate(field, operator, tuple(value), re.compile(expression),
+                         re.compile(expression, re.I), re.compile(expression, re.I))
     _text(value, label, empty=field == 'path' and operator == 'exact', maximum=MAX_PATTERN)
     if field == 'domain':
         value = normalize_domain(value.lstrip('.') if operator == 'suffix' else value)
@@ -263,7 +273,7 @@ def validate_rules(data):
                 raise RuleValidationError(f'{label}.match: target is required')
             target = match['target']
             fields = {'process': {'name', 'publisher', 'path'}, 'startup': {'name', 'label', 'path'},
-                      'destination': {'domain'}, 'finding': {'rule_id', 'subject'}}
+                      'destination': {'domain', 'process_name'}, 'finding': {'rule_id', 'subject'}}
             if not isinstance(target, str) or target not in fields:
                 raise RuleValidationError(f'{label}.match: invalid target')
             if set(match) - {'target'} - fields[target] or len(match) == 1:

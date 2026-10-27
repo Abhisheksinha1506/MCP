@@ -397,7 +397,7 @@ client logs are separate copies. Verification never deletes a user database.
   timeouts, file-size limits and inspection budgets leave gaps. Completely
   invisible processes cannot be counted. Multiple instances sharing a name make
   connection attribution uncertain. No output establishes complete coverage.
-- Starter data is small: 13 rules (including core/context entries) and 41
+- Starter data is small: 43 rules (including core/context entries) and 41
   knowledge entries; the bloatware and ignore sections start empty. Entries
   need human review. Missing a process/domain is not an endorsement.
 - macOS uses codesign plus Gatekeeper inside a network/service-denying
@@ -438,7 +438,29 @@ match, reason, confidence (high/medium/low), and platforms (OS list or all).
 Optional fields: severity (info/low/medium) and source_note. Add a unique ID and
 reviewed provenance, an exact/glob/restricted-regex process name, publisher or
 path predicate; startup label/name/path; exact/suffix domain; or a finding
-rule_id/subject suppression. Predicates within a rule combine with AND.
+rule_id/subject suppression. Predicates within a rule combine with AND. Destination rules may also require
+`process_name: {exact: Code}` or `process_name: {one_of: [Code, code, Code.exe]}`.
+`one_of` accepts 1–16 exact process names; names are case-sensitive on Linux and
+case-insensitive on Windows/macOS. Both the domain and process must match.
+A process name is only a scope restriction, not proof of application identity.
+The existing Firefox rule now also requires a Firefox process name.
+
+**known_bloatware is empty.** No preinstalled-software classifications were added.
+This expansion adds 30 entries: 29 exact Windows-only community domains and one
+VS Code crash-reporting endpoint across all three platforms. Community entries
+are low confidence and informational, including potential false positives;
+listing is not vendor confirmation. Vendor crash reporting also stays informational.
+The WindowsSpyBlocker source is pinned to its 2022 list and may be stale.
+Homebrew was reviewed but omitted because its connector is generic `curl`, which
+this snapshot cannot attribute reliably. No new Win32 entries were justified.
+Steven Black's list was not used. The 13 retained baseline entries keep their
+original provenance; no new claims were drawn from their sources in this pass.
+
+[THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES) includes Microsoft documentation's
+CC BY 3.0 US notice and complete license text, and WindowsSpyBlocker's MIT text.
+Both are redistributed with the wheel and source archive. Endpoint mappings
+were selected and adapted into local rules; no source is fetched at runtime.
+**All starter entries need human review before relying on them.**
 
 For example, this **documentation-only fragment** illustrates a user opt-out
 under ignore_list; it is not added to the shipped rules:
@@ -505,6 +527,37 @@ validation examples are covered by the unit tests.
 | core.windows.explorer | Microsoft's [Sysinternals reference sample](https://download.microsoft.com/download/a/f/a/afab0aee-5bcb-445d-9e1a-a45214fa4e5f/9780735656727_samplechapters.pdf) uses c:/windows/explorer.exe. This is a standard-layout policy. | needs human review |
 | publisher.microsoft-windows | The same [Sysinternals sample](https://download.microsoft.com/download/a/f/a/afab0aee-5bcb-445d-9e1a-a45214fa4e5f/9780735656727_samplechapters.pdf) documents the Microsoft Windows signer CN; used only as context. | needs human review |
 | publisher.systemd-package | Debian's [systemd package description](https://packages.debian.org/stable/systemd) identifies the system/service manager package; used only as provenance context. | needs human review |
+
+| wsb.alpha.telemetry.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `alpha.telemetry.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.ca.telemetry.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `ca.telemetry.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.df.telemetry.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `df.telemetry.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.oca.telemetry.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `oca.telemetry.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.oca.telemetry.microsoft.us | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `oca.telemetry.microsoft.us` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.reports.wes.df.telemetry.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `reports.wes.df.telemetry.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.services.wes.df.telemetry.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `services.wes.df.telemetry.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.sqm.df.telemetry.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `sqm.df.telemetry.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.sqm.telemetry.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `sqm.telemetry.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.sqm.telemetry.microsoft.com.nsatc.net | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `sqm.telemetry.microsoft.com.nsatc.net` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.telecommand.telemetry.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `telecommand.telemetry.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.telemetry.appex.bing.net | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `telemetry.appex.bing.net` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.telemetry.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `telemetry.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.telemetry.remoteapp.windowsazure.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `telemetry.remoteapp.windowsazure.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.telemetry.urs.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `telemetry.urs.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.umwatsonc.telemetry.microsoft.us | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `umwatsonc.telemetry.microsoft.us` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.watson.ppe.telemetry.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `watson.ppe.telemetry.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.watson.telemetry.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `watson.telemetry.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.wes.df.telemetry.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `wes.df.telemetry.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.kmwatson.events.data.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `kmwatson.events.data.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.kmwatsonc.events.data.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `kmwatsonc.events.data.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.nw-umwatson.events.data.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `nw-umwatson.events.data.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.umwatson.events.data.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `umwatson.events.data.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.umwatsonc.events.data.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `umwatsonc.events.data.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.v10.vortex-win.data.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `v10.vortex-win.data.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.v20.vortex-win.data.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `v20.vortex-win.data.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.vortex.data.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `vortex.data.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.browser.pipe.aria.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `browser.pipe.aria.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| wsb.mobile.pipe.aria.microsoft.com | Community [Hosts spy rules](https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt), exact `mobile.pipe.aria.microsoft.com` row; MIT; low confidence, info; Windows only. | needs human review |
+| vscode.crash-reporting | Vendor [Network Connections in Visual Studio Code](https://github.com/microsoft/vscode-docs/blob/da213552439825628e0ab958dbde1e413dbc36bf/docs/setup/network.md), Common hostnames / `rink.hockeyapp.net` crash-reporting row; CC BY 3.0 US; medium confidence, info; process-scoped. | needs human review |
 
 </details>
 

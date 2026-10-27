@@ -123,7 +123,7 @@ def analyze(snapshot: Snapshot, rules: RuleSet | None = None, *, min_severity='i
             return {'name': record.name, 'path': record.exe_path, 'publisher': record.publisher}
         if target == 'startup':
             return {'name': record.name, 'label': record.name, 'path': record.path}
-        return {'domain': record.resolved_domain or record.remote_host}
+        return {'domain': record.resolved_domain or record.remote_host, 'process_name': record.process_name}
 
     def check_lengths(values, target, subject):
         if any(isinstance(v, str) and len(v) > MAX_INPUT for v in values.values()):

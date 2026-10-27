@@ -86,11 +86,12 @@ def main():
         for filename in ('rules.yaml', 'knowledge.yaml'):
             assert any(n.endswith('/share/dialtone-watcher/' + filename) for n in names)
         assert any(n.endswith('/licenses/LICENSE') for n in names)
+        assert any(n.endswith('/licenses/THIRD_PARTY_NOTICES') for n in names)
         assert any(n.endswith('/entry_points.txt') for n in names)
     extracted = root / 'extracted'
     unpack(sdist, extracted)
     sdist_source, = extracted.iterdir()
-    for filename in ('LICENSE', 'README.md', 'SECURITY.md', 'CHANGELOG.md', 'data/rules.yaml', 'data/knowledge.yaml'):
+    for filename in ('LICENSE', 'THIRD_PARTY_NOTICES', 'README.md', 'SECURITY.md', 'CHANGELOG.md', 'data/rules.yaml', 'data/knowledge.yaml'):
         assert (sdist_source / filename).is_file(), 'Missing sdist file: ' + filename
     rebuilt = root / 'rebuilt'
     rebuilt.mkdir()

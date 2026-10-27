@@ -50,6 +50,8 @@ def test_all_tools_resources_annotations_privacy_and_stdout(tmp_path, capfd, mon
     async def scenario(platform):
         snap = fixture_snapshot(platform)
         active_rules = yaml.safe_load((Path(__file__).parent.parent / 'data/rules.yaml').read_text())
+        # Explicit synthetic scope keeps this injection fixture independent of vendor aliases.
+        active_rules['known_telemetry_domains'][0]['match']['process_name'] = {'exact': INJECTION + '\x1b\x00'}
         active_rules['known_telemetry_domains'][0]['source_note'] = (
             INJECTION + '\x00 /Users/privatefixture/file /home/privatefixture/file '
             + r'C:\Users\privatefixture\file')

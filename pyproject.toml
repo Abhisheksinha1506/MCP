@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Local, offline, advice-only process and network inspection over MCP stdio"
 readme = "README.md"
 license = "MIT"
-license-files = ["LICENSE"]
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES"]
 authors = [{name = "Dialtone Watcher contributors"}]
 classifiers = [
     "Development Status :: 3 - Alpha",

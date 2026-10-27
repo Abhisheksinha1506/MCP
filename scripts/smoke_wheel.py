@@ -27,6 +27,10 @@ async def check():
     assert distribution.metadata['License-Expression'] == 'MIT'
     assert distribution.metadata['Requires-Python'] == '>=3.11'
     assert distribution.metadata['Description-Content-Type'] == 'text/markdown'
+    notices = [p for p in distribution.files or []
+               if str(p).replace('\\', '/').endswith('/licenses/THIRD_PARTY_NOTICES')]
+    assert len(notices) == 1, 'Third-party notices missing from wheel installation'
+    assert 'Creative Commons' in Path(distribution.locate_file(notices[0])).read_text(encoding='utf-8')
     bundled = []
     for filename in ('rules.yaml', 'knowledge.yaml'):
         matches = [p for p in distribution.files or [] if str(p).replace('\\', '/').endswith('/share/dialtone-watcher/' + filename)]

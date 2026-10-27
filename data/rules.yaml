@@ -5,6 +5,11 @@ known_telemetry_domains:
     target: destination
     domain:
       exact: incoming.telemetry.mozilla.org
+    process_name:
+      one_of:
+      - firefox
+      - Firefox
+      - firefox.exe
   reason: Mozilla documents this endpoint for Firefox telemetry. Connection metadata
     cannot show consent or the data sent.
   confidence: high
@@ -12,6 +17,433 @@ known_telemetry_domains:
   source_note: 'needs human review; Mozilla Firefox Enterprise Help, Domains to allow
     for Firefox, Telemetry section: https://support.mozilla.org/en-US/kb/domains-allow-firefox'
   severity: info
+- id: wsb.alpha.telemetry.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: alpha.telemetry.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, alpha.telemetry.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.ca.telemetry.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: ca.telemetry.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, ca.telemetry.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.df.telemetry.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: df.telemetry.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, df.telemetry.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.oca.telemetry.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: oca.telemetry.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, oca.telemetry.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.oca.telemetry.microsoft.us
+  match:
+    target: destination
+    domain:
+      exact: oca.telemetry.microsoft.us
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, oca.telemetry.microsoft.us
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.reports.wes.df.telemetry.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: reports.wes.df.telemetry.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, reports.wes.df.telemetry.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.services.wes.df.telemetry.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: services.wes.df.telemetry.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, services.wes.df.telemetry.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.sqm.df.telemetry.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: sqm.df.telemetry.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, sqm.df.telemetry.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.sqm.telemetry.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: sqm.telemetry.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, sqm.telemetry.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.sqm.telemetry.microsoft.com.nsatc.net
+  match:
+    target: destination
+    domain:
+      exact: sqm.telemetry.microsoft.com.nsatc.net
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, sqm.telemetry.microsoft.com.nsatc.net
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.telecommand.telemetry.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: telecommand.telemetry.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, telecommand.telemetry.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.telemetry.appex.bing.net
+  match:
+    target: destination
+    domain:
+      exact: telemetry.appex.bing.net
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, telemetry.appex.bing.net
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.telemetry.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: telemetry.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, telemetry.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.telemetry.remoteapp.windowsazure.com
+  match:
+    target: destination
+    domain:
+      exact: telemetry.remoteapp.windowsazure.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, telemetry.remoteapp.windowsazure.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.telemetry.urs.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: telemetry.urs.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, telemetry.urs.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.umwatsonc.telemetry.microsoft.us
+  match:
+    target: destination
+    domain:
+      exact: umwatsonc.telemetry.microsoft.us
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, umwatsonc.telemetry.microsoft.us
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.watson.ppe.telemetry.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: watson.ppe.telemetry.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, watson.ppe.telemetry.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.watson.telemetry.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: watson.telemetry.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, watson.telemetry.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.wes.df.telemetry.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: wes.df.telemetry.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, wes.df.telemetry.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.kmwatson.events.data.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: kmwatson.events.data.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, kmwatson.events.data.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.kmwatsonc.events.data.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: kmwatsonc.events.data.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, kmwatsonc.events.data.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.nw-umwatson.events.data.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: nw-umwatson.events.data.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, nw-umwatson.events.data.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.umwatson.events.data.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: umwatson.events.data.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, umwatson.events.data.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.umwatsonc.events.data.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: umwatsonc.events.data.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, umwatsonc.events.data.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.v10.vortex-win.data.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: v10.vortex-win.data.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, v10.vortex-win.data.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.v20.vortex-win.data.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: v20.vortex-win.data.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, v20.vortex-win.data.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.vortex.data.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: vortex.data.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, vortex.data.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.browser.pipe.aria.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: browser.pipe.aria.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, browser.pipe.aria.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: wsb.mobile.pipe.aria.microsoft.com
+  match:
+    target: destination
+    domain:
+      exact: mobile.pipe.aria.microsoft.com
+  reason: Community spy-list categorization only; possible false positive. Consent
+    and payload are unknown.
+  confidence: low
+  platforms:
+  - windows
+  severity: info
+  source_note: 'needs human review; WindowsSpyBlocker, Hosts spy rules, mobile.pipe.aria.microsoft.com
+    row; pinned commit URL: https://github.com/crazy-max/WindowsSpyBlocker/blob/87266541e57a5f4332d8fd939f2a03675566e17c/data/hosts/spy.txt
+    (MIT; list updated 2022-05-16).'
+- id: vscode.crash-reporting
+  match:
+    target: destination
+    domain:
+      exact: rink.hockeyapp.net
+    process_name:
+      one_of:
+      - Code
+      - code
+      - Code.exe
+  reason: Visual Studio Code network documentation identifies this endpoint as a crash
+    reporting service. The connection also matches a VS Code process name; the name
+    alone does not verify application identity, consent, or the data sent.
+  confidence: medium
+  platforms: all
+  severity: info
+  source_note: needs human review; Microsoft, Network Connections in Visual Studio
+    Code, Common hostnames section, rink.hockeyapp.net / Crash reporting service row;
+    commit da213552439825628e0ab958dbde1e413dbc36bf; https://github.com/microsoft/vscode-docs/blob/da213552439825628e0ab958dbde1e413dbc36bf/docs/setup/network.md
+    ; documentation CC BY 3.0 US. Process aliases are a local scoping policy, not
+    evidence of binary identity.
 known_bloatware: []
 trusted_publishers:
 - id: publisher.microsoft-windows

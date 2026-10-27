@@ -250,7 +250,7 @@ def create_server(database=None, *, collect=collect_snapshot, collector_factory=
             unusual_by_name.setdefault(key, set()).update(
                 f.rule_id for f in analyze(single, rules).findings if f.type == 'unusual')
         for connection in snap.connections:
-            values = {'domain': connection.resolved_domain or connection.remote_host}
+            values = {'domain': connection.resolved_domain or connection.remote_host, 'process_name': connection.process_name}
             matched_rules = [r for r in rules.section('known_telemetry_domains')
                              if r.matches('destination', values, snap.os)]
             process_rules = unusual_by_name.get(names(connection.process_name), set())
@@ -302,7 +302,7 @@ def create_server(database=None, *, collect=collect_snapshot, collector_factory=
         connections = [c for c in snap.connections if equal(c.process_name)]
         startup = [i for i in snap.startup_items if i.path and normalize_path(i.path, snap.os) in paths]
         for target, values_list in (
-            ('destination', [{'domain': c.resolved_domain or c.remote_host} for c in connections]),
+            ('destination', [{'domain': c.resolved_domain or c.remote_host, 'process_name': c.process_name} for c in connections]),
             ('startup', [{'name': i.name, 'label': i.name, 'path': i.path} for i in startup]),
         ):
             for values in values_list:
